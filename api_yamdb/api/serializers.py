@@ -21,4 +21,4 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        exclude = '__all__'
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')

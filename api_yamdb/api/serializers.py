@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api_yamdb.reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):

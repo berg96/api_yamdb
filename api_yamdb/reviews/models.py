@@ -54,30 +54,19 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        related_name="title",
+        related_name="titles",
         blank=True,
-        null=True, 
+        null=True,
         verbose_name='Категория'
     )
 # Нужно определить связанность
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
-        related_name="title",
-        blank=True,
-        null=True,
+        related_name="titles",
         verbose_name='Жанр'
     )
 
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-
-
-
-
-
-
-
-
 

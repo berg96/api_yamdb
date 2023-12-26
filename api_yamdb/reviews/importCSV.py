@@ -3,7 +3,10 @@ import csv
 from pathlib import Path
 import fnmatch
 
-from api_yamdb.api.models import Category
+# from api_yamdb.api_yamdb.api.models import Category
+
+from api.models import Category
+
 
 from inspect import getsourcefile
 from os.path import abspath

@@ -2,7 +2,8 @@ import os
 import csv
 from pathlib import Path
 import fnmatch
-from .models import Category, Genre, Title
+
+from api_yamdb.api.models import Category
 
 from inspect import getsourcefile
 from os.path import abspath

@@ -5,7 +5,7 @@ import fnmatch
 
 # from api_yamdb.api_yamdb.api.models import Category
 
-from api.models import Category
+from reviews.models import Category
 
 
 from inspect import getsourcefile

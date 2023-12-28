@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from api.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title
 
 
 

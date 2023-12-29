@@ -14,6 +14,10 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class Smoke(models.Model):
+    name = models.CharField(max_length=256, verbose_name='Название')
+
+
 # ---------------------------------------------------------------------------------------
 # CATEGORIES
 # категории CATEGORIES,
@@ -41,7 +45,7 @@ class Genre(BaseModel):
 # ---------------------------------------------------------------------------------------
 # TITLES
 # произведения TITLES,
-# category - string - фильтрует по полю slug категории 
+# category - string - фильтрует по полю slug категории
 # genre - string - фильтрует по полю slug жанра
 # name - string -фильтрует по названию произведения <= 256 characters
 # year - integer - фильтрует по году

@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
-from api_yamdb.reviews.validators import correct_year
+from reviews.validators import correct_year
 
 User = get_user_model()
 
@@ -82,7 +83,13 @@ class Title(models.Model):
 class Review(models.Model):
     text = models.CharField(max_length=256, verbose_name='Текст отзыва')
     author = models.ForeignKey(User, related_name='reviews', on_delete=models.CASCADE)
-    score = models.IntegerField(choices=list(range(1, 10)), verbose_name='Оценка')
+    score = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1, message='Оценка должна быть от 1'),
+            MaxValueValidator(10, message='Оценка должна быть до 10')
+        ],
+        verbose_name='Оценка'
+    )
     pub_date = models.DateTimeField(auto_now=True, verbose_name='Дата публикации')
 
     class Meta:

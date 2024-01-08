@@ -1,10 +1,22 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from reviews.validators import correct_year
-from api.models import MyUser
-# User = get_user_model()
+
+
+class MyUser(AbstractUser):
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+    ROLE_CHOICES = (
+        (USER, 'User'),
+        (MODERATOR, 'Moderator'),
+        (ADMIN, 'Admin'),
+    )
+    bio = models.TextField('Биография', blank=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
+    verification_code = models.CharField(max_length=4)
 
 
 class BaseModel(models.Model):

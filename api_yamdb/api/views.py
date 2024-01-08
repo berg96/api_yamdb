@@ -6,9 +6,16 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets
 
-from .serializers import SignupSerializer, TokenSerializer, UserSerializer
+from .serializers import (
+    SignupSerializer, TokenSerializer, UserSerializer,
+    CategorySerializer, GenreSerializer, TitleSerializer,
+    ReviewSerializer, CommentsSerializer
+)
 from .utils import send_verification_email, generate_verification_code
+from reviews.models import Category, Genre, Title, Review, Comments
 
 User = get_user_model()
 
@@ -84,3 +91,33 @@ class UserDetailForAdmin(UserDetail, DestroyAPIView):
         if (serializer.validated_data['role'] == 'moderator' or
                 serializer.validated_data['role'] == 'user'):
             serializer.save(is_staff=False)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    pagination_class = PageNumberPagination
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    pagination_class = PageNumberPagination
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+
+
+class CommentsViewSet(viewsets.ModelViewSet):
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
+    pagination_class = PageNumberPagination

@@ -1,9 +1,10 @@
 import csv
 from pathlib import Path
 
+from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 
-from api.models import MyUser
+User = get_user_model()
 
 BASE_DIR = Path.cwd() / 'static' / 'data'
 TEMPLATE_DIR = BASE_DIR / 'users.csv'
@@ -18,7 +19,7 @@ class Command(BaseCommand):
             reader = csv.reader(f)
             headers = next(reader)
             for row in reader:
-                _, created = MyUser.objects.get_or_create(
+                _, created = User.objects.get_or_create(
                     id=row[0],
                     username=row[1],
                     email=row[2],

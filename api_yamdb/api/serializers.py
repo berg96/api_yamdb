@@ -47,7 +47,10 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('name', 'year', 'category', 'genre', 'description')
+        fields = (
+            'id', 'name', 'year', 'rating', 'description',
+            'genre', 'category',
+        )
         model = Title
 
     def get_rating(self, obj):
@@ -71,7 +74,10 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('name', 'year', 'category', 'genre', 'description')
+        fields = (
+            'id', 'name', 'year', 'rating', 'description',
+            'genre', 'category'
+        )
         model = Title
 
 
@@ -81,7 +87,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
     def validate(self, data):
@@ -100,6 +106,6 @@ class CommentsSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('text', 'author', 'pub_date')
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comments
         read_only_fields = ('title', 'author')

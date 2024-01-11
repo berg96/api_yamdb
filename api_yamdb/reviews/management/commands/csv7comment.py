@@ -22,5 +22,5 @@ class Command(BaseCommand):
                     text=row[2],
                     pub_date=row[4],
                     author_id=row[3],
-                    reviews_id=row[1],
+                    review_id=row[1],
                 )

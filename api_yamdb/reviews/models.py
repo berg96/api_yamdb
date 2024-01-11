@@ -71,15 +71,6 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
 
-# class GenreTitle(models.Model):
-#     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-#     title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-#     class Meta:
-#         verbose_name = 'Жанр и Произвенение'
-#         verbose_name_plural = 'Жанры и Произведения'
-
-
 class Review(models.Model):
     '''Модель Отзывы'''
     text = models.CharField(
@@ -119,7 +110,7 @@ class Comments(models.Model):
         MyUser, related_name='comments',
         on_delete=models.CASCADE
     )
-    reviews = models.ForeignKey(
+    review = models.ForeignKey(
         Review, related_name='comments',
         on_delete=models.CASCADE
     )

@@ -47,7 +47,7 @@ class SignupView(APIView):
                     username=username, email=email, verification_code=code
                 )
             send_verification_email(email, code)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import viewsets, filters, permissions
 
 
@@ -20,7 +19,6 @@ from .utils import send_verification_email, generate_verification_code
 from reviews.models import Category, Genre, Title, Review
 from .permissions import (IsAdminUserOrReadOnly,
                           IsAuthorAdminSuperuserOrReadOnlyPermission, )
-from .filters import TitleFilter
 
 User = get_user_model()
 
@@ -106,7 +104,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
-    pagination_class = LimitOffsetPagination
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -116,15 +113,13 @@ class GenreViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', )
     lookup_field = 'slug'
-    pagination_class = LimitOffsetPagination
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
-    filterset_class = TitleFilter
-    pagination_class = LimitOffsetPagination
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -139,7 +134,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         IsAuthorAdminSuperuserOrReadOnlyPermission,
         permissions.IsAuthenticatedOrReadOnly
     ]
-    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         title = get_object_or_404(
@@ -160,7 +154,6 @@ class CommentsViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly
     ]
     serializer_class = CommentsSerializer
-    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         review = get_object_or_404(

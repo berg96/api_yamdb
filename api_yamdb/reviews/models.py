@@ -60,6 +60,12 @@ class Title(models.Model):
     #     verbose_name='Жанр'
     # )
 
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Описание'
+    )
+
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'

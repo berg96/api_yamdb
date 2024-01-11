@@ -47,7 +47,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('name', 'year', 'category', 'genre')
+        fields = ('name', 'year', 'category', 'genre', 'description')
         model = Title
 
     def get_rating(self, obj):
@@ -71,7 +71,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('name', 'year', 'category', 'genre')
+        fields = ('name', 'year', 'category', 'genre', 'description')
         model = Title
 
 

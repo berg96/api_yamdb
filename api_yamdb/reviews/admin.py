@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import(
-    Category, Genre, Title, Review, Comments, GenreTitle, MyUser)
+    Category, Genre, Title, Review, Comments, MyUser)
 
 admin.site.register(Category)
 
@@ -12,7 +12,5 @@ admin.site.register(Title)
 admin.site.register(Review)
 
 admin.site.register(Comments)
-
-admin.site.register(GenreTitle)
 
 admin.site.register(MyUser)

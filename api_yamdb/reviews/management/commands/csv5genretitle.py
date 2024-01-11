@@ -3,7 +3,7 @@ from pathlib import Path
 
 from django.core.management import BaseCommand
 
-from reviews.models import GenreTitle
+from reviews.models import Genre, Title
 
 BASE_DIR = Path.cwd() / 'static' / 'data'
 TEMPLATE_DIR = BASE_DIR / 'genre_title.csv'
@@ -15,11 +15,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # self.stdout.write('Welcome')
         with open(TEMPLATE_DIR) as f:
-            reader = csv.reader(f)
-            headers = next(reader)
+            reader = csv.DictReader(f)
             for row in reader:
-                _, created = GenreTitle.objects.get_or_create(
-                    id=row[0],
-                    genre_id=row[2],
-                    title_id=row[1],
-                )
+                title = Title.objects.get(id=row['title_id'])
+                genre = Genre.objects.get(id=row['genre_id'])
+                title.genre.add(genre)

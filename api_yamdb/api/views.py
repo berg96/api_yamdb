@@ -75,6 +75,7 @@ class TokenView(APIView):
 class UserList(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 

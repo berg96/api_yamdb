@@ -1,6 +1,9 @@
+import re
+
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from rest_framework import serializers, status
 from django.db.models import Avg
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import (
     Category, Genre, Title, Review, Comments)
@@ -26,11 +29,45 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # username = serializers.CharField(
+    #     max_length=150,
+    #     validators=[UniqueValidator(queryset=User.objects.all())]
+    # )
+    # email = serializers.EmailField(
+    #     max_length=254,
+    #     validators=[UniqueValidator(queryset=User.objects.all())]
+    # )
+    role = serializers.CharField(read_only=True)
     class Meta:
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
+
+    # def validate(self, data):
+    #     email = data.get('email')
+    #     username = data.get('username')
+    #     if User.objects.filter(email=email).exists():
+    #         user = User.objects.get(email=email)
+    #         if user.username != username:
+    #             raise serializers.ValidationError(
+    #                 {'detail': 'Пользователь с таким email уже существует.'},
+    #                 status.HTTP_400_BAD_REQUEST
+    #             )
+    #     return data
+
+    def validate_username(self, value):
+        if not re.fullmatch(r'^[\w.@+-]+\Z', value):
+            raise serializers.ValidationError(status.HTTP_400_BAD_REQUEST)
+        return value
+
+    # def validate_email(self, value):
+    #     if User.objects.filter(email=value).exists():
+    #         raise serializers.ValidationError(
+    #             {'detail': 'Пользователь с таким email уже существует.'},
+    #             status.HTTP_400_BAD_REQUEST
+    #         )
+    #     return value
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -55,8 +92,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating', 'description',
-            'genre', 'category',
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
 
@@ -82,8 +118,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating', 'description',
-            'genre', 'category'
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
 

@@ -93,7 +93,6 @@ class UserDetail(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        print(self.request.user.username)
         return self.request.user
 
 

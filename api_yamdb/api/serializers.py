@@ -12,6 +12,13 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     username = serializers.CharField(max_length=150)
 
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Нельзя использовать "me" в качестве username'
+            )
+        return value
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)

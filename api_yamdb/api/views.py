@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.generics import get_object_or_404, RetrieveUpdateAPIView, \
@@ -30,6 +32,10 @@ class SignupView(APIView):
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
+            if not re.fullmatch(r'^[\w.@+-]+\Z', username):
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
             email = serializer.validated_data['email']
             code = generate_verification_code()
             try:
@@ -53,7 +59,7 @@ class TokenView(APIView):
         if serializer.is_valid():
             username = serializer.validated_data['username']
             code = serializer.validated_data['confirmation_code']
-            user = User.objects.get(username=username)
+            user = get_object_or_404(User, username=username)
             if user.verification_code != code:
                 return Response(
                     'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
@@ -69,6 +75,16 @@ class TokenView(APIView):
 class UserList(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+
+    def perform_create(self, serializer):
+        username = serializer.validated_data.get('username')
+        if not re.fullmatch(r'^[\w.@+-]+\Z', username):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if serializer.validated_data.get('role') == 'admin':
+            serializer.save(is_staff=True)
+        super().perform_create(serializer)
 
 
 class UserDetail(RetrieveUpdateAPIView):

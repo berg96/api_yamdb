@@ -28,12 +28,12 @@ urlpatterns = [
     path('v1/auth/signup/', SignupView.as_view(), name='signup'),
     path('v1/auth/token/', TokenView.as_view(), name='token'),
     path('v1/users/me/', UserDetail.as_view(), name='user_detail'),
+    path('v1/users/', UserList.as_view(), name='users'),
     # path(
     #     r'v1/users/(?P<username>[\w.@+-]+)/',
     #     UserDetailForAdmin.as_view(),
     #     name='user'
     # ),
-    path('v1/users/', UserList.as_view(), name='users'),
     path(
         'v1/users/<str:username>/',
         UserDetailForAdmin.as_view(), name='user'),

@@ -23,8 +23,3 @@ class IsAuthorAdminSuperuserOrReadOnlyPermission(permissions.BasePermission):
                 or (request.user.is_staff
                     or request.user.role == 'moderator'
                     or obj.author == request.user))
-
-
-class IsAdminPermission(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_staff

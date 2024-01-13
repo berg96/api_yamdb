@@ -20,8 +20,8 @@ class MyUser(AbstractUser):
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
     verification_code = models.CharField(max_length=4)
-    last_name = models.CharField(max_length=150)
-    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=152, blank=True)
+    first_name = models.CharField(max_length=150, blank=True)
 
 
 class BaseModel(models.Model):

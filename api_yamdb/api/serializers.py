@@ -3,6 +3,7 @@ import re
 from django.contrib.auth import get_user_model
 from rest_framework import serializers, status
 from django.db.models import Avg
+from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
 
 from reviews.models import (
@@ -15,29 +16,47 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     username = serializers.CharField(max_length=150)
 
-    def validate_username(self, value):
-        if value == 'me':
+    def validate(self, data):
+        username = data['username']
+        email = data['email']
+        if username == 'me':
             raise serializers.ValidationError(
                 'Нельзя использовать "me" в качестве username'
             )
-        return value
+        if User.objects.filter(email=email).exists():
+            if User.objects.get(email=email).username != username:
+                raise serializers.ValidationError(
+                    'Введенный email уже используется другим пользователем'
+                )
+        if User.objects.filter(username=username).exists():
+            if User.objects.get(username=username).email != email:
+                raise serializers.ValidationError(
+                    'Введенный email не соответствует '
+                    'зарегистрированному username'
+                )
+        return data
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField(max_length=4)
 
+    def validate_username(self,value):
+        user = get_object_or_404(User, username=value)
+        return value
 
-class UserSerializer(serializers.ModelSerializer):
-    # username = serializers.CharField(
-    #     max_length=150,
-    #     validators=[UniqueValidator(queryset=User.objects.all())]
-    # )
-    # email = serializers.EmailField(
-    #     max_length=254,
-    #     validators=[UniqueValidator(queryset=User.objects.all())]
-    # )
-    role = serializers.CharField(read_only=True)
+
+class UserSerializerForAdmin(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    # role = serializers.CharField(read_only=True)
+    # last_name = serializers.CharField(max_length=150)
     class Meta:
         model = User
         fields = (
@@ -61,6 +80,13 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(status.HTTP_400_BAD_REQUEST)
         return value
 
+    def validate_last_name(self, value):
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                'Значение last_name должно содержать не более 150 символов'
+            )
+        return value
+
     # def validate_email(self, value):
     #     if User.objects.filter(email=value).exists():
     #         raise serializers.ValidationError(
@@ -68,6 +94,10 @@ class UserSerializer(serializers.ModelSerializer):
     #             status.HTTP_400_BAD_REQUEST
     #         )
     #     return value
+
+
+class UserSerializer(UserSerializerForAdmin):
+    role = serializers.CharField(read_only=True)
 
 
 class CategorySerializer(serializers.ModelSerializer):

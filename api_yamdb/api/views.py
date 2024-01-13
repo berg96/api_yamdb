@@ -15,12 +15,13 @@ from rest_framework import viewsets, filters, permissions
 from .serializers import (
     SignupSerializer, TokenSerializer, UserSerializer,
     CategorySerializer, GenreSerializer, TitleReadSerializer,
-    TitleWriteSerializer, ReviewSerializer, CommentsSerializer
+    TitleWriteSerializer, ReviewSerializer, CommentsSerializer,
+    UserSerializerForAdmin
 )
 from .utils import send_verification_email, generate_verification_code
 from reviews.models import Category, Genre, Title, Review
 from .permissions import (IsAdminUserOrReadOnly,
-                          IsAuthorAdminSuperuserOrReadOnlyPermission, )
+                          IsAuthorAdminSuperuserOrReadOnlyPermission,)
 
 User = get_user_model()
 
@@ -57,10 +58,11 @@ class TokenView(APIView):
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
-            code = serializer.validated_data['confirmation_code']
-            user = get_object_or_404(User, username=username)
-            if user.verification_code != code:
+            user = get_object_or_404(
+                User, username=serializer.validated_data['username']
+            )
+            if (user.verification_code !=
+                    serializer.validated_data['confirmation_code']):
                 return Response(
                     'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
                 )
@@ -74,7 +76,7 @@ class TokenView(APIView):
 
 class UserList(ListCreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserSerializerForAdmin
     permission_classes = [IsAdminUser]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -99,6 +101,7 @@ class UserDetail(RetrieveUpdateAPIView):
 
 class UserDetailForAdmin(UserDetail, DestroyAPIView):
     permission_classes = [IsAdminUser]
+    serializer_class = UserSerializerForAdmin
 
     def get_object(self):
         print(self.request.user.username)

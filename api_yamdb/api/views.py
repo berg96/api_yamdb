@@ -34,10 +34,11 @@ class SignupView(APIView):
     serializer_class = SignupSerializer
 
     def post(self, request):
+        serializer = SignupSerializer(request.data)
         username = request.data.get('username')
         email = request.data.get('email')
         code = str(random.randint(*RANGE_CODE))
-        _ = User.objects.get_or_create(username=username, email=email)
+        user, _ = User.objects.get_or_create(username=username, email=email)
         send_mail(
             'Код подтверждения',
             f'Ваш код подтверждения: {code}',

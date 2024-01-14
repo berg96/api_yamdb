@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .validators import UsernameValidator
 from reviews.models import (Category, Comments, Genre, Review, Title,
@@ -17,19 +17,24 @@ MAX_LENGTH_USERNAME = 150
 
 
 class SignupSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=MAX_LENGTH_EMAIL, required=True)
+    email = serializers.EmailField(
+        max_length=MAX_LENGTH_EMAIL, required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
     username = serializers.CharField(
         max_length=MAX_LENGTH_USERNAME, required=True,
-        validators=[UsernameValidator()]
+        validators=[
+            UsernameValidator(), UniqueValidator(queryset=User.objects.all())
+        ]
     )
 
-    # class Meta:
-    #     validators = [
-    #         UniqueTogetherValidator(
-    #             queryset=User.objects.all(),
-    #             fields=('username', 'email')
-    #         )
-    #     ]
+    class Meta:
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=('username', 'email')
+            )
+        ]
 
     def validate(self, data):
         username = data['username']

@@ -96,14 +96,6 @@ class UserDetailForAdmin(UserDetail, DestroyAPIView):
     def get_object(self):
         return get_object_or_404(User, username=self.kwargs['username'])
 
-    def perform_update(self, serializer):
-        role = serializer.validated_data.get('role')
-        if role == 'admin':
-            serializer.save(is_staff=True)
-        if role == 'moderator' or role == 'user':
-            serializer.save(is_staff=False)
-        super().perform_update(serializer)
-
 
 class CategoryViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,

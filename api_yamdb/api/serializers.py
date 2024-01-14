@@ -67,6 +67,12 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializerForAdmin(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[
+            UsernameValidator(), UniqueValidator(queryset=User.objects.all())
+        ]
+    )
 
     class Meta:
         model = User
@@ -74,16 +80,12 @@ class UserSerializerForAdmin(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Нельзя использовать "me" в качестве username'
-            )
-        return value
-
 
 class UserSerializer(UserSerializerForAdmin):
-    role = serializers.CharField(read_only=True)
+    class Meta(UserSerializerForAdmin.Meta):
+        extra_kwargs = {
+            'role': {'read_only': True}
+        }
 
 
 class CategorySerializer(serializers.ModelSerializer):

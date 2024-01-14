@@ -14,7 +14,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
 from .permissions import (IsAdminUserOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnlyPermission)
+                          IsAuthorAdminModeratorOrReadOnlyPermission,
+                          IsAdminRole)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
                           TitleSerializer, TokenSerializer, UserSerializer,
@@ -83,7 +84,7 @@ class TokenView(APIView):
 class UserList(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializerForAdmin
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminRole]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
@@ -98,7 +99,7 @@ class UserDetail(RetrieveUpdateAPIView):
 
 
 class UserDetailForAdmin(UserDetail, DestroyAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminRole]
     serializer_class = UserSerializerForAdmin
     http_method_names = ['get', 'patch', 'delete']
 
@@ -133,7 +134,7 @@ class GenreViewSet(
 ):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -143,7 +144,7 @@ class GenreViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']

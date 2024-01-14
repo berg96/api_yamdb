@@ -15,13 +15,10 @@ class MyUser(AbstractUser):
         (ADMIN, 'Admin'),
     )
 
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(unique=True)
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
-    verification_code = models.CharField(max_length=4)
-    last_name = models.CharField(max_length=150, blank=True)
-    first_name = models.CharField(max_length=150, blank=True)
+    confirmation_code = models.CharField(max_length=4)
 
     class Meta:
         ordering = ('username', )

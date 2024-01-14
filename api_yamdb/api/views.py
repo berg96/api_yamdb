@@ -47,11 +47,11 @@ class SignupView(APIView):
             code = str(random.randint(1000, 9999))
             try:
                 user = User.objects.get(username=username)
-                user.verification_code = code
+                user.confirmation_code = code
                 user.save()
             except User.DoesNotExist:
                 User.objects.create(
-                    username=username, email=email, verification_code=code
+                    username=username, email=email, confirmation_code=code
                 )
             send_mail(
                 'Код подтверждения',
@@ -92,12 +92,6 @@ class UserList(ListCreateAPIView):
     permission_classes = [IsAdminUser]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-
-    def perform_create(self, serializer):
-        username = serializer.validated_data.get('username')
-        if not re.fullmatch(r'^[\w.@+-]+\Z', username):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        super().perform_create(serializer)
 
 
 class UserDetail(RetrieveUpdateAPIView):

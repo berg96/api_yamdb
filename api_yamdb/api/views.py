@@ -109,8 +109,6 @@ class UserDetailForAdmin(UserDetail, DestroyAPIView):
     http_method_names = ['get', 'patch', 'delete']
 
     def get_object(self):
-        print(self.request.user.username)
-        print(self.kwargs)
         return get_object_or_404(User, username=self.kwargs['username'])
 
     def perform_update(self, serializer):

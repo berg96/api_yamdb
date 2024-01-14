@@ -8,6 +8,8 @@ from reviews.validators import correct_year
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
+MAX_LENGTH_CODE = 4
+RANGE_CODE = (1000, 9999)
 
 
 class MyUser(AbstractUser):
@@ -20,7 +22,7 @@ class MyUser(AbstractUser):
     email = models.EmailField(unique=True)
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
-    confirmation_code = models.CharField(max_length=4)
+    confirmation_code = models.CharField(max_length=MAX_LENGTH_CODE)
 
     class Meta:
         ordering = ('username', )

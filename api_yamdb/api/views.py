@@ -1,6 +1,7 @@
 import random
-import re
+import os
 
+from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,42 +21,30 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
                           TitleSerializer, TokenSerializer, UserSerializer,
                           UserSerializerForAdmin)
-from reviews.models import Category, Genre, Review, Title
+from reviews.models import Category, Genre, Review, Title, RANGE_CODE
 
+load_dotenv()
 
 User = get_user_model()
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = SignupSerializer(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            if not re.fullmatch(r'^[\w.@+-]+\Z', username):
-                return Response(
-                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
-            email = serializer.validated_data['email']
-            code = str(random.randint(1000, 9999))
-            try:
-                user = User.objects.get(username=username)
-                user.confirmation_code = code
-                user.save()
-            except User.DoesNotExist:
-                User.objects.create(
-                    username=username, email=email, confirmation_code=code
-                )
-            send_mail(
-                'Код подтверждения',
-                f'Ваш код подтверждения: {code}',
-                'yamdb-team5@yandex.ru',
-                [email],
-                fail_silently=False,
-            )
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        email = request.data.get('email')
+        code = str(random.randint(*RANGE_CODE))
+        _ = User.objects.get_or_create(username=username, email=email)
+        send_mail(
+            'Код подтверждения',
+            f'Ваш код подтверждения: {code}',
+            SENDER_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+        return Response(request.data, status=status.HTTP_200_OK)
 
 
 class TokenView(APIView):

@@ -1,24 +1,38 @@
+import re
+
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
+from rest_framework.validators import UniqueTogetherValidator
 
+from .validators import UsernameValidator
 from reviews.models import Category, Comments, Genre, Review, Title
 
 User = get_user_model()
 
+MAX_LENGTH_EMAIL = 254
+MAX_LENGTH_USERNAME = 150
+
 
 class SignupSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=254)
-    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField(max_length=MAX_LENGTH_EMAIL, required=True)
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[UsernameValidator()]
+    )
+
+    # class Meta:
+    #     validators = [
+    #         UniqueTogetherValidator(
+    #             queryset=User.objects.all(),
+    #             fields=('username', 'email')
+    #         )
+    #     ]
 
     def validate(self, data):
         username = data['username']
         email = data['email']
-        if username == 'me':
-            raise serializers.ValidationError(
-                'Нельзя использовать "me" в качестве username'
-            )
         if User.objects.filter(email=email).exists():
             if User.objects.get(email=email).username != username:
                 raise serializers.ValidationError(

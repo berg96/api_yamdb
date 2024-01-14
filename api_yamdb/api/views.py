@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from dotenv import load_dotenv
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets, mixins
 from rest_framework.generics import (DestroyAPIView, ListCreateAPIView,
                                      RetrieveUpdateAPIView, get_object_or_404)
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -14,11 +14,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .filters import TitleFilter
 from .permissions import (IsAdminUserOrReadOnly,
                           IsAuthorAdminSuperuserOrReadOnlyPermission)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
-                          TitleReadSerializer, TitleWriteSerializer,
+                          TitleSerializer,
                           TokenSerializer, UserSerializer,
                           UserSerializerForAdmin)
 from reviews.models import Category, Genre, Review, Title
@@ -70,12 +71,12 @@ class TokenView(APIView):
             user = get_object_or_404(
                 User, username=serializer.validated_data['username']
             )
-            # if (user.confirmation_code != serializer.validated_data[
-            #     'confirmation_code'
-            # ]):
-            #     return Response(
-            #         'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
-            #     )
+            if (user.confirmation_code != serializer.validated_data[
+                'confirmation_code'
+            ]):
+                return Response(
+                    'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
+                )
             refresh = RefreshToken.for_user(user)
             data = {
                 'token': str(refresh.access_token)
@@ -118,43 +119,59 @@ class UserDetailForAdmin(UserDetail, DestroyAPIView):
         super().perform_update(serializer)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin,
+    mixins.DestroyModelMixin, viewsets.GenericViewSet
+):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
+    http_method_names = ['get', 'post', 'delete']
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin,
+    mixins.DestroyModelMixin, viewsets.GenericViewSet
+):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', )
     lookup_field = 'slug'
+    http_method_names = ['get', 'post', 'delete']
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    # serializer_class = TitleReadSerializer
+    serializer_class = TitleSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+    filterset_class = TitleFilter
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
-    # def perform_create(self, serializer):
-    #     print(serializer.validated_data)
-    #     genres = serializer.validated_data['genre']
-    #     category = serializer.validated_data['category']
-    #     serializer.save(category=category)
-    #     for genre in genres:
-    #         serializer.instance.genre.add(genre)
+    def perform_create(self, serializer):
+        genres = self.request.data.getlist('genre')
+        serializer.save(
+            category=Category.objects.get(
+                slug=self.request.data.get('category')
+            )
+        )
+        for genre in genres:
+            serializer.instance.genre.add(get_object_or_404(Genre, slug=genre))
 
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return TitleReadSerializer
-        return TitleWriteSerializer
+    def perform_update(self, serializer):
+        genres = self.request.data.getlist('genre')
+        serializer.save(
+            category=Category.objects.get(
+                slug=self.request.data.get('category')
+            )
+        )
+        for genre in genres:
+            serializer.instance.genre.add(get_object_or_404(Genre, slug=genre))
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

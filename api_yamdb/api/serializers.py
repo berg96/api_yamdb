@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
-from rest_framework import serializers, status
+from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
 from reviews.models import Category, Comments, Genre, Review, Title
@@ -74,13 +74,13 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleReadSerializer(serializers.ModelSerializer):
+class TitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
         many=True
     )
-    rating = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         fields = (
@@ -90,29 +90,11 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         if obj.reviews.count() == 0:
-            return 0
+            return None
         rev = Review.objects.filter(
             title=obj
         ).aggregate(rating=Avg('score'))
         return rev['rating']
-
-
-class TitleWriteSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(),
-        slug_field='slug'
-    )
-    genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug',
-        many=True
-    )
-
-    class Meta:
-        fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
-        )
-        model = Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):

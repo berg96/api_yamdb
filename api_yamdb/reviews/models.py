@@ -20,8 +20,11 @@ class MyUser(AbstractUser):
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
     verification_code = models.CharField(max_length=4)
-    last_name = models.CharField(max_length=152, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
     first_name = models.CharField(max_length=150, blank=True)
+
+    class Meta:
+        ordering = ('username', )
 
     def save(self, *args, **kwargs):
         if self.role == self.ADMIN:
@@ -43,6 +46,7 @@ class Category(BaseModel):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ('name',)
 
 
 class Genre(BaseModel):
@@ -50,6 +54,7 @@ class Genre(BaseModel):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
+        ordering = ('name',)
 
 
 class Title(models.Model):
@@ -75,8 +80,10 @@ class Title(models.Model):
         null=True,
         verbose_name='Описание'
     )
+    rating = models.FloatField(blank=True, null=True)
 
     class Meta:
+        ordering = ('name', )
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -111,6 +118,13 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Отзыв произведения'
         verbose_name_plural = 'Отзывы произведений'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_author_title'
+            )
+        ]
+        ordering = ('pub_date', )
 
 
 class Comments(models.Model):
@@ -132,3 +146,4 @@ class Comments(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+        ordering = ('pub_date', )

@@ -1,15 +1,19 @@
+import os
+import random
 import re
 
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from rest_framework import status
-from rest_framework.generics import get_object_or_404, RetrieveUpdateAPIView, \
-    DestroyAPIView, ListCreateAPIView
+from rest_framework.generics import (get_object_or_404, RetrieveUpdateAPIView,
+                                     DestroyAPIView, ListCreateAPIView)
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import viewsets, filters, permissions
+from dotenv import load_dotenv
 
 
 from .serializers import (
@@ -18,11 +22,13 @@ from .serializers import (
     TitleWriteSerializer, ReviewSerializer, CommentsSerializer,
     UserSerializerForAdmin
 )
-from .utils import send_verification_email, generate_verification_code
 from reviews.models import Category, Genre, Title, Review
 from .permissions import (IsAdminUserOrReadOnly,
                           IsAuthorAdminSuperuserOrReadOnlyPermission,)
 
+load_dotenv()
+
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 User = get_user_model()
 
 
@@ -38,7 +44,7 @@ class SignupView(APIView):
                     serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
             email = serializer.validated_data['email']
-            code = generate_verification_code()
+            code = str(random.randint(1000, 9999))
             try:
                 user = User.objects.get(username=username)
                 user.verification_code = code
@@ -47,7 +53,13 @@ class SignupView(APIView):
                 User.objects.create(
                     username=username, email=email, verification_code=code
                 )
-            send_verification_email(email, code)
+            send_mail(
+                'Код подтверждения',
+                f'Ваш код подтверждения: {code}',
+                SENDER_EMAIL,
+                [email],
+                fail_silently=False,
+            )
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -100,6 +112,7 @@ class UserDetail(RetrieveUpdateAPIView):
 class UserDetailForAdmin(UserDetail, DestroyAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = UserSerializerForAdmin
+    http_method_names = ['get', 'patch', 'delete']
 
     def get_object(self):
         print(self.request.user.username)
@@ -107,17 +120,18 @@ class UserDetailForAdmin(UserDetail, DestroyAPIView):
         return get_object_or_404(User, username=self.kwargs['username'])
 
     def perform_update(self, serializer):
-        if serializer.validated_data['role'] == 'admin':
+        if serializer.validated_data.get('role') == 'admin':
             serializer.save(is_staff=True)
-        if (serializer.validated_data['role'] == 'moderator' or
-                serializer.validated_data['role'] == 'user'):
+        if (serializer.validated_data.get('role') == 'moderator' or
+                serializer.validated_data.get('role') == 'user'):
             serializer.save(is_staff=False)
+        super().perform_update(serializer)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -151,6 +165,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         IsAuthorAdminSuperuserOrReadOnlyPermission,
         permissions.IsAuthenticatedOrReadOnly
     ]
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         title = get_object_or_404(
@@ -171,6 +186,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly
     ]
     serializer_class = CommentsSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         review = get_object_or_404(

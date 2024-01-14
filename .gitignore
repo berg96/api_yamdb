@@ -147,6 +147,5 @@ dmypy.json
 
 # папки со статикой и медиа
 media/
-*migrations/
 # тестовые файлы
 DENTEST_*

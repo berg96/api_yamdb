@@ -1,13 +1,12 @@
 import re
 
 from django.contrib.auth import get_user_model
-from rest_framework import serializers, status
 from django.db.models import Avg
+from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
+from rest_framework.validators import UniqueValidator
 
-from reviews.models import (
-    Category, Genre, Title, Review, Comments)
+from reviews.models import Category, Comments, Genre, Review, Title
 
 User = get_user_model()
 

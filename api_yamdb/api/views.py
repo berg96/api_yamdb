@@ -4,27 +4,24 @@ import re
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from rest_framework import status
-from rest_framework.generics import (get_object_or_404, RetrieveUpdateAPIView,
-                                     DestroyAPIView, ListCreateAPIView)
+from django_filters.rest_framework import DjangoFilterBackend
+from dotenv import load_dotenv
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.generics import (DestroyAPIView, ListCreateAPIView,
+                                     RetrieveUpdateAPIView, get_object_or_404)
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import viewsets, filters, permissions
-from dotenv import load_dotenv
 
-
-from .serializers import (
-    SignupSerializer, TokenSerializer, UserSerializer,
-    CategorySerializer, GenreSerializer, TitleReadSerializer,
-    TitleWriteSerializer, ReviewSerializer, CommentsSerializer,
-    UserSerializerForAdmin
-)
-from reviews.models import Category, Genre, Title, Review
 from .permissions import (IsAdminUserOrReadOnly,
-                          IsAuthorAdminSuperuserOrReadOnlyPermission,)
+                          IsAuthorAdminSuperuserOrReadOnlyPermission)
+from .serializers import (CategorySerializer, CommentsSerializer,
+                          GenreSerializer, ReviewSerializer, SignupSerializer,
+                          TitleReadSerializer, TitleWriteSerializer,
+                          TokenSerializer, UserSerializer,
+                          UserSerializerForAdmin)
+from reviews.models import Category, Genre, Review, Title
 
 load_dotenv()
 

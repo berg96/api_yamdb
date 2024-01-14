@@ -7,7 +7,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueTogetherValidator
 
 from .validators import UsernameValidator
-from reviews.models import Category, Comments, Genre, Review, Title
+from reviews.models import (Category, Comments, Genre, Review, Title,
+                            MAX_LENGTH_CODE)
 
 User = get_user_model()
 
@@ -48,12 +49,16 @@ class SignupSerializer(serializers.Serializer):
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(max_length=4)
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True
+    )
+    confirmation_code = serializers.CharField(
+        max_length=MAX_LENGTH_CODE, required=True
+    )
 
-    def validate_username(self, value):
-        _ = get_object_or_404(User, username=value)
-        return value
+    # def validate_username(self, value):
+    #     _ = get_object_or_404(User, username=value)
+    #     return value
 
 
 class UserSerializerForAdmin(serializers.ModelSerializer):

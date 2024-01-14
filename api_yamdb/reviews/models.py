@@ -23,6 +23,11 @@ class MyUser(AbstractUser):
     last_name = models.CharField(max_length=152, blank=True)
     first_name = models.CharField(max_length=150, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.role == self.ADMIN:
+            self.is_staff = True
+        super().save(*args, **kwargs)
+
 
 class BaseModel(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')

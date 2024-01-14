@@ -85,8 +85,6 @@ class UserList(ListCreateAPIView):
         username = serializer.validated_data.get('username')
         if not re.fullmatch(r'^[\w.@+-]+\Z', username):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if serializer.validated_data.get('role') == 'admin':
-            serializer.save(is_staff=True)
         super().perform_create(serializer)
 
 

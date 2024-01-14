@@ -83,9 +83,7 @@ class UserSerializerForAdmin(serializers.ModelSerializer):
 
 class UserSerializer(UserSerializerForAdmin):
     class Meta(UserSerializerForAdmin.Meta):
-        extra_kwargs = {
-            'role': {'read_only': True}
-        }
+        read_only_fields = ('role',)
 
 
 class CategorySerializer(serializers.ModelSerializer):

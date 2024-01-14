@@ -1,11 +1,9 @@
-import os
 import random
 import re
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
-from dotenv import load_dotenv
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.generics import (DestroyAPIView, ListCreateAPIView,
                                      RetrieveUpdateAPIView, get_object_or_404)
@@ -23,9 +21,7 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           UserSerializerForAdmin)
 from reviews.models import Category, Genre, Review, Title
 
-load_dotenv()
 
-SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 User = get_user_model()
 
 
@@ -53,7 +49,7 @@ class SignupView(APIView):
             send_mail(
                 'Код подтверждения',
                 f'Ваш код подтверждения: {code}',
-                SENDER_EMAIL,
+                'yamdb-team5@yandex.ru',
                 [email],
                 fail_silently=False,
             )

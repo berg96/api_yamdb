@@ -1,20 +1,16 @@
 import csv
-from pathlib import Path
 
 from django.core.management import BaseCommand
 
 from reviews.models import Genre, Title
 
-BASE_DIR = Path.cwd() / 'static' / 'data'
-TEMPLATE_DIR = BASE_DIR / 'genre_title.csv'
-
 
 class Command(BaseCommand):
-    help = 'Добавление в модель Категории данных из CSV'
+    help = 'Добавление в модель Произведений связь с Жанрами из CSV'
 
     def handle(self, *args, **kwargs):
-        # self.stdout.write('Welcome')
-        with open(TEMPLATE_DIR) as f:
+        file_path = 'static/data/genre_title.csv'
+        with open(file_path, 'r', encoding='utf8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 title = Title.objects.get(id=row['title_id'])

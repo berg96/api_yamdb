@@ -7,6 +7,7 @@ from reviews.models import Review
 
 class Command(BaseCommand):
     help = 'Добавление в модель Review данных из CSV'
+
     def handle(self, *args, **kwargs):
         file_path = 'static/data/review.csv'
         with open(file_path, 'r', encoding='utf8') as file:

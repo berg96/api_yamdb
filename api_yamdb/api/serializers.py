@@ -40,8 +40,8 @@ class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField(max_length=4)
 
-    def validate_username(self,value):
-        user = get_object_or_404(User, username=value)
+    def validate_username(self, value):
+        _ = get_object_or_404(User, username=value)
         return value
 
 
@@ -54,6 +54,7 @@ class UserSerializerForAdmin(serializers.ModelSerializer):
         max_length=254,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
+
     class Meta:
         model = User
         fields = (

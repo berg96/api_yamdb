@@ -70,8 +70,9 @@ class TokenView(APIView):
             user = get_object_or_404(
                 User, username=serializer.validated_data['username']
             )
-            if (user.verification_code !=
-                    serializer.validated_data['confirmation_code']):
+            if (user.verification_code != serializer.validated_data[
+                'confirmation_code'
+            ]):
                 return Response(
                     'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
                 )

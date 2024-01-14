@@ -5,10 +5,12 @@ from django.db import models
 from reviews.validators import correct_year
 
 
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
+
 class MyUser(AbstractUser):
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
     ROLE_CHOICES = (
         (USER, 'User'),
         (MODERATOR, 'Moderator'),
@@ -22,11 +24,6 @@ class MyUser(AbstractUser):
 
     class Meta:
         ordering = ('username', )
-
-    def save(self, *args, **kwargs):
-        if self.role == self.ADMIN:
-            self.is_staff = True
-        super().save(*args, **kwargs)
 
 
 class BaseModel(models.Model):

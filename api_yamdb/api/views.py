@@ -14,7 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
 from .permissions import (IsAdminUserOrReadOnly,
-                          IsAuthorAdminSuperuserOrReadOnlyPermission)
+                          IsAuthorAdminModeratorOrReadOnlyPermission)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
                           TitleSerializer, TokenSerializer, UserSerializer,
@@ -172,10 +172,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [
-        IsAuthorAdminSuperuserOrReadOnlyPermission,
-        permissions.IsAuthenticatedOrReadOnly
-    ]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnlyPermission]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
@@ -192,10 +189,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthorAdminSuperuserOrReadOnlyPermission,
-        permissions.IsAuthenticatedOrReadOnly
-    ]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnlyPermission]
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 

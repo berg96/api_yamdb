@@ -1,10 +1,7 @@
-import re
-
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comments, Genre, Review, Title
 
@@ -46,14 +43,6 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializerForAdmin(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=150,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
-    email = serializers.EmailField(
-        max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
 
     class Meta:
         model = User
@@ -62,8 +51,10 @@ class UserSerializerForAdmin(serializers.ModelSerializer):
         )
 
     def validate_username(self, value):
-        if not re.fullmatch(r'^[\w.@+-]+\Z', value):
-            raise serializers.ValidationError(status.HTTP_400_BAD_REQUEST)
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Нельзя использовать "me" в качестве username'
+            )
         return value
 
 
@@ -99,7 +90,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         if obj.reviews.count() == 0:
-            return None
+            return 0
         rev = Review.objects.filter(
             title=obj
         ).aggregate(rating=Avg('score'))

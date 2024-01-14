@@ -70,12 +70,12 @@ class TokenView(APIView):
             user = get_object_or_404(
                 User, username=serializer.validated_data['username']
             )
-            if (user.verification_code != serializer.validated_data[
-                'confirmation_code'
-            ]):
-                return Response(
-                    'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
-                )
+            # if (user.confirmation_code != serializer.validated_data[
+            #     'confirmation_code'
+            # ]):
+            #     return Response(
+            #         'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
+            #     )
             refresh = RefreshToken.for_user(user)
             data = {
                 'token': str(refresh.access_token)
@@ -138,9 +138,18 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    # serializer_class = TitleReadSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+
+    # def perform_create(self, serializer):
+    #     print(serializer.validated_data)
+    #     genres = serializer.validated_data['genre']
+    #     category = serializer.validated_data['category']
+    #     serializer.save(category=category)
+    #     for genre in genres:
+    #         serializer.instance.genre.add(genre)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):

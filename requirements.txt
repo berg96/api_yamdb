@@ -8,4 +8,3 @@ pytest-pythonpath==0.7.3
 rest_framework_simplejwt
 djangorestframework-simplejwt
 django-filter==23.5
-python-dotenv==1.0.0

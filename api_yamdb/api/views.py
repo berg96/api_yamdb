@@ -19,8 +19,9 @@ from .permissions import (IsAdminUserOrReadOnly,
                           IsAdminRole)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
-                          TitleSerializer, TokenSerializer, UserSerializer,
-                          UserSerializerForAdmin)
+                          TokenSerializer, UserSerializer,
+                          UserSerializerForAdmin, TitleReadSerializer,
+                          TitleWriteSerializer)
 from reviews.models import Category, Genre, Review, Title, RANGE_CODE
 
 load_dotenv()
@@ -125,31 +126,15 @@ class GenreViewSet(
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def perform_create(self, serializer):
-        genres = self.request.data.getlist('genre')
-        serializer.save(
-            category=Category.objects.get(
-                slug=self.request.data.get('category')
-            )
-        )
-        for genre in genres:
-            serializer.instance.genre.add(get_object_or_404(Genre, slug=genre))
-
-    def perform_update(self, serializer):
-        genres = self.request.data.getlist('genre')
-        serializer.save(
-            category=Category.objects.get(
-                slug=self.request.data.get('category')
-            )
-        )
-        for genre in genres:
-            serializer.instance.genre.add(get_object_or_404(Genre, slug=genre))
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

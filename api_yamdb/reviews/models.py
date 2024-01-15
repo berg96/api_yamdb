@@ -2,26 +2,34 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from reviews.validators import correct_year
+from .validators import correct_year, validate_username
 
 
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
-MAX_LENGTH_CODE = 4
-RANGE_CODE = (1000, 9999)
-
-
-class MyUser(AbstractUser):
-    ROLE_CHOICES = (
+ROLE_CHOICES = (
         (USER, 'User'),
         (MODERATOR, 'Moderator'),
         (ADMIN, 'Admin'),
     )
+MAX_LENGTH_USERNAME = 150
+MAX_LENGTH_EMAIL = 254
+MAX_LENGTH_ROLE = max(len(role) for role in ROLE_CHOICES)
+MAX_LENGTH_CODE = 4
+RANGE_CODE = (1000, 9999)
 
-    email = models.EmailField(unique=True)
+
+class CustomUser(AbstractUser):
+    username = models.CharField(
+        max_length=MAX_LENGTH_USERNAME, unique=True,
+        validators=[validate_username]
+    )
+    email = models.EmailField(max_length=MAX_LENGTH_EMAIL, unique=True)
     bio = models.TextField('Биография', blank=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
+    role = models.CharField(
+        max_length=MAX_LENGTH_ROLE, choices=ROLE_CHOICES, default=USER
+    )
     confirmation_code = models.CharField(max_length=MAX_LENGTH_CODE)
 
     class Meta:
@@ -91,7 +99,7 @@ class Review(models.Model):
         verbose_name='Текст отзыва'
     )
     author = models.ForeignKey(
-        MyUser, related_name='reviews',
+        CustomUser, related_name='reviews',
         on_delete=models.CASCADE
     )
     score = models.IntegerField(
@@ -127,7 +135,7 @@ class Comments(models.Model):
     '''Модель комментарии'''
     text = models.CharField(max_length=256, verbose_name='Текст комментария')
     author = models.ForeignKey(
-        MyUser, related_name='comments',
+        CustomUser, related_name='comments',
         on_delete=models.CASCADE
     )
     review = models.ForeignKey(

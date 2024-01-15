@@ -3,7 +3,7 @@ from rest_framework.routers import SimpleRouter
 
 from .views import (CategoryViewSet, CommentsViewSet, GenreViewSet,
                     ReviewViewSet, SignupView, TitleViewSet, TokenView,
-                    UserDetail, UserDetailForAdmin, UserList)
+                    UserDetail, UserDetailForAdmin, UserList, signup)
 
 app_name = 'api'
 router_v1 = SimpleRouter()
@@ -23,7 +23,7 @@ router_v1.register(
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    path('v1/auth/signup/', SignupView.as_view(), name='signup'),
+    path('v1/auth/signup/', signup, name='signup'),
     path('v1/auth/token/', TokenView.as_view(), name='token'),
     path('v1/users/me/', UserDetail.as_view(), name='user_detail'),
     path('v1/users/', UserList.as_view(), name='users'),

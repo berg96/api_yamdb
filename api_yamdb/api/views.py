@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (DestroyAPIView, ListCreateAPIView,
                                      RetrieveUpdateAPIView, get_object_or_404)
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -48,6 +49,29 @@ class SignupView(APIView):
             fail_silently=False,
         )
         return Response(request.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup(request):
+    serializer = SignupSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    email = serializer.data['email']
+    username = serializer.data['username']
+    user, _ = User.objects.get_or_create(email=email, username=username)
+
+    # generate token
+    # confirmation_code = default_token_generator.make_token(user)
+    confirmation_code = str(random.randint(*RANGE_CODE))
+    send_mail(
+        'Код подтверждения',
+        f'Ваш код подтверждения: {confirmation_code}',
+        SENDER_EMAIL,
+        [email],
+        fail_silently=False,
+    )
+    user.confirmation_code = confirmation_code
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TokenView(APIView):

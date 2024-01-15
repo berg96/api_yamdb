@@ -18,26 +18,15 @@ User = get_user_model()
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
         max_length=MAX_LENGTH_EMAIL, required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
     )
     username = serializers.CharField(
         max_length=MAX_LENGTH_USERNAME, required=True,
-        validators=[
-            validate_username, UniqueValidator(queryset=User.objects.all())
-        ]
+        validators=[validate_username]
     )
 
-    class Meta:
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=('username', 'email')
-            )
-        ]
-
     def validate(self, data):
-        username = data['username']
-        email = data['email']
+        username = data.get('username')
+        email = data.get('email')
         if User.objects.filter(email=email).exists():
             if User.objects.get(email=email).username != username:
                 raise serializers.ValidationError(

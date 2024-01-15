@@ -31,26 +31,6 @@ User = get_user_model()
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 
 
-class SignupView(APIView):
-    permission_classes = [AllowAny]
-    serializer_class = SignupSerializer
-
-    def post(self, request):
-        serializer = SignupSerializer(request.data)
-        username = request.data.get('username')
-        email = request.data.get('email')
-        code = str(random.randint(*RANGE_CODE))
-        user, _ = User.objects.get_or_create(username=username, email=email)
-        send_mail(
-            'Код подтверждения',
-            f'Ваш код подтверждения: {code}',
-            SENDER_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-        return Response(request.data, status=status.HTTP_200_OK)
-
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
@@ -59,9 +39,6 @@ def signup(request):
     email = serializer.data['email']
     username = serializer.data['username']
     user, _ = User.objects.get_or_create(email=email, username=username)
-
-    # generate token
-    # confirmation_code = default_token_generator.make_token(user)
     confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',

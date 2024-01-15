@@ -51,26 +51,27 @@ def signup(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TokenView(APIView):
-    permission_classes = [AllowAny]
-    serializer_class = TokenSerializer
-
-    def post(self, request):
-        user = get_object_or_404(
-            User, username=request.data.get('username')
-        )
-        if (user.confirmation_code != request.data.get(
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def give_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        User, username=serializer.validated_data['username']
+    )
+    if (user.confirmation_code != serializer.validated_data[
             'confirmation_code'
-        )):
-            user.confirmation_code = None
-            return Response(
-                'Неверный код доступа', status=status.HTTP_400_BAD_REQUEST
-            )
-        refresh = RefreshToken.for_user(user)
-        data = {
-            'token': str(refresh.access_token)
-        }
-        return Response(data)
+    ]):
+        user.confirmation_code = None
+        return Response(
+            {'detail': 'Неверный код доступа'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    refresh = RefreshToken.for_user(user)
+    data = {
+        'token': str(refresh.access_token)
+    }
+    return Response(data, status=status.HTTP_200_OK)
 
 
 class UserList(ListCreateAPIView):

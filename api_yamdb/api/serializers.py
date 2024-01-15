@@ -1,9 +1,7 @@
-import re
-
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from rest_framework.validators import UniqueValidator
 
 
 from reviews.models import (Category, Comments, Genre, Review, Title,
@@ -48,10 +46,6 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(
         max_length=MAX_LENGTH_CODE, required=True
     )
-
-    # def validate_username(self, value):
-    #     _ = get_object_or_404(User, username=value)
-    #     return value
 
 
 class UserSerializerForAdmin(serializers.ModelSerializer):

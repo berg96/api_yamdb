@@ -24,5 +24,5 @@ def validate_username(username):
         )
     if not re.fullmatch(PATTERN, username):
         raise ValidationError(
-            f'Username не соответствует паттерну {PATTERN}'
+            f'Username не соответствует паттерну {PATTERN}: {username}'
         )

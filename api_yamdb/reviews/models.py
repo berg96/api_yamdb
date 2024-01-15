@@ -15,7 +15,7 @@ ROLE_CHOICES = (
     )
 MAX_LENGTH_USERNAME = 150
 MAX_LENGTH_EMAIL = 254
-MAX_LENGTH_ROLE = max(len(role) for role in ROLE_CHOICES)
+MAX_LENGTH_ROLE = max(len(role) for tuple in ROLE_CHOICES for role in tuple)
 MAX_LENGTH_CODE = 4
 RANGE_CODE = (1000, 9999)
 
@@ -26,7 +26,7 @@ class CustomUser(AbstractUser):
         validators=[validate_username]
     )
     email = models.EmailField(max_length=MAX_LENGTH_EMAIL, unique=True)
-    bio = models.TextField('Биография', blank=True)
+    bio = models.TextField(blank=True)
     role = models.CharField(
         max_length=MAX_LENGTH_ROLE, choices=ROLE_CHOICES, default=USER
     )

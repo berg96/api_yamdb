@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import (Category, Comments, Genre, Review, Title,
                             MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
@@ -32,13 +31,6 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME, required=True,
-        validators=[
-            validate_username, UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-
     class Meta:
         model = User
         fields = (

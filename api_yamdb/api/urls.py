@@ -2,13 +2,13 @@ from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from .views import (CategoryViewSet, CommentsViewSet, GenreViewSet,
-                    ReviewViewSet, TitleViewSet,
-                    UserDetail, UserDetailForAdmin, UserList, signup,
-                    give_token)
+                    ReviewViewSet, TitleViewSet, signup,
+                    give_token, UserViewSet)
 
 app_name = 'api'
 router_v1 = SimpleRouter()
-router_v1.register('categories', CategoryViewSet, basename='сategories')
+router_v1.register('users', UserViewSet, basename='users')
+router_v1.register('categories', CategoryViewSet, basename='categories')
 router_v1.register('genres', GenreViewSet, basename='genres')
 router_v1.register('titles', TitleViewSet, basename='titles')
 router_v1.register(
@@ -26,10 +26,5 @@ urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/signup/', signup, name='signup'),
     path('v1/auth/token/', give_token, name='give_token'),
-    path('v1/users/me/', UserDetail.as_view(), name='user_detail'),
-    path('v1/users/', UserList.as_view(), name='users'),
-    path(
-        'v1/users/<str:username>/',
-        UserDetailForAdmin.as_view(), name='user'),
     path('v1/', include(router_v1.urls)),
 ]

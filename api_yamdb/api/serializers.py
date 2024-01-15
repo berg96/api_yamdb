@@ -3,7 +3,6 @@ from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-
 from reviews.models import (Category, Comments, Genre, Review, Title,
                             MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
                             MAX_LENGTH_USERNAME)
@@ -48,7 +47,7 @@ class TokenSerializer(serializers.Serializer):
     )
 
 
-class UserSerializerForAdmin(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=MAX_LENGTH_USERNAME, required=True,
         validators=[
@@ -61,11 +60,6 @@ class UserSerializerForAdmin(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
-
-
-class UserSerializer(UserSerializerForAdmin):
-    class Meta(UserSerializerForAdmin.Meta):
-        read_only_fields = ('role',)
 
 
 class CategorySerializer(serializers.ModelSerializer):

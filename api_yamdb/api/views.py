@@ -6,11 +6,11 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.generics import (DestroyAPIView, ListCreateAPIView,
-                                     RetrieveUpdateAPIView, get_object_or_404)
+from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
@@ -20,7 +20,7 @@ from .permissions import (IsAdminUserOrReadOnly,
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
                           TokenSerializer, UserSerializer,
-                          UserSerializerForAdmin, TitleReadSerializer,
+                          TitleReadSerializer,
                           TitleWriteSerializer)
 from reviews.models import Category, Genre, Review, Title, RANGE_CODE
 
@@ -73,30 +73,33 @@ def give_token(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
-class UserList(ListCreateAPIView):
+class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializerForAdmin
+    serializer_class = UserSerializer
     permission_classes = [IsAdminRole]
+    lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
+    @action(
+        detail=False,
+        methods=['get', 'patch',],
+        permission_classes=[IsAuthenticated]
+    )
+    def me(self, request):
+        user = request.user
+        if request.method == 'GET':
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=user.role, partial=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-class UserDetail(RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
-
-class UserDetailForAdmin(UserDetail, DestroyAPIView):
-    permission_classes = [IsAdminRole]
-    serializer_class = UserSerializerForAdmin
-    http_method_names = ['get', 'patch', 'delete']
-
-    def get_object(self):
-        return get_object_or_404(User, username=self.kwargs['username'])
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
 
 
 class CategoryViewSet(

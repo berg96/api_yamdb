@@ -42,6 +42,7 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('name',)
 
 
 class Category(BaseModel):
@@ -50,15 +51,13 @@ class Category(BaseModel):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
 
 
 class Genre(BaseModel):
-    '''Модель Жанры'''
+    '''Модель Жанра'''
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
 
 
 class Title(models.Model):
@@ -84,7 +83,6 @@ class Title(models.Model):
         null=True,
         verbose_name='Описание'
     )
-    rating = models.FloatField(blank=True, null=True)
 
     class Meta:
         ordering = ('name', )
@@ -96,11 +94,11 @@ class Review(models.Model):
     '''Модель Отзывы'''
     text = models.CharField(
         max_length=256,
-        verbose_name='Текст отзыва'
+        verbose_name='Текст'
     )
     author = models.ForeignKey(
         CustomUser, related_name='reviews',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE, verbose_name='Автор'
     )
     score = models.IntegerField(
         validators=[
@@ -133,7 +131,7 @@ class Review(models.Model):
 
 class Comments(models.Model):
     '''Модель комментарии'''
-    text = models.CharField(max_length=256, verbose_name='Текст комментария')
+    text = models.CharField(max_length=256, verbose_name='Текст')
     author = models.ForeignKey(
         CustomUser, related_name='comments',
         on_delete=models.CASCADE

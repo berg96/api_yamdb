@@ -41,7 +41,11 @@ def signup(request):
     try:
         user, _ = User.objects.get_or_create(email=email, username=username)
     except IntegrityError:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'detail': 'Что-то из веденных данных используется '
+                       f'другим пользователем: {username} или {email}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',

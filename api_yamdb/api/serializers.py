@@ -13,7 +13,7 @@ User = get_user_model()
 
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        max_length=MAX_LENGTH_EMAIL, required=True,
+        max_length=MAX_LENGTH_EMAIL, required=True
     )
     username = serializers.CharField(
         max_length=MAX_LENGTH_USERNAME, required=True,

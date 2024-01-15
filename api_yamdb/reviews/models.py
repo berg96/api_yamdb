@@ -42,7 +42,6 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('name',)
 
 
 class Category(BaseModel):
@@ -51,6 +50,7 @@ class Category(BaseModel):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ('name',)
 
 
 class Genre(BaseModel):
@@ -58,6 +58,7 @@ class Genre(BaseModel):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
+        ordering = ('name',)
 
 
 class Title(models.Model):

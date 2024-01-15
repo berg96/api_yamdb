@@ -21,22 +21,6 @@ class SignupSerializer(serializers.Serializer):
         validators=[validate_username]
     )
 
-    def validate(self, data):
-        username = data.get('username')
-        email = data.get('email')
-        if User.objects.filter(email=email).exists():
-            if User.objects.get(email=email).username != username:
-                raise serializers.ValidationError(
-                    'Введенный email уже используется другим пользователем'
-                )
-        if User.objects.filter(username=username).exists():
-            if User.objects.get(username=username).email != email:
-                raise serializers.ValidationError(
-                    'Введенный email не соответствует '
-                    'зарегистрированному username'
-                )
-        return data
-
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(

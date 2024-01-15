@@ -1,6 +1,7 @@
 import random
 import os
 
+from django.db import IntegrityError
 from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -37,7 +38,10 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     email = serializer.data['email']
     username = serializer.data['username']
-    user, _ = User.objects.get_or_create(email=email, username=username)
+    try:
+        user, _ = User.objects.get_or_create(email=email, username=username)
+    except IntegrityError:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',

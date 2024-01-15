@@ -40,12 +40,21 @@ def signup(request):
     username = serializer.data['username']
     try:
         user, _ = User.objects.get_or_create(email=email, username=username)
-    except IntegrityError:
-        return Response(
-            {'detail': 'Что-то из веденных данных используется '
-                       f'другим пользователем: {username} или {email}'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    except IntegrityError as error:
+        error_response = {}
+        if 'username' in str(error):
+            error_response['username'] = [
+                username, 'Используется другим пользователем'
+            ]
+        if 'email' in str(error):
+            if User.objects.filter(username=username).exists():
+                error_response['username'] = [
+                    username, 'Используется другим пользователем'
+                ]
+            error_response['email'] = [
+                email, 'Используется другим пользователем'
+            ]
+        return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',

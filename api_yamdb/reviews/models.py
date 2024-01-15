@@ -23,17 +23,29 @@ RANGE_CODE = (10000, 99999)
 class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=MAX_LENGTH_USERNAME, unique=True,
-        validators=[validate_username]
+        validators=[validate_username],
+        verbose_name='Никнейм'
     )
-    email = models.EmailField(max_length=MAX_LENGTH_EMAIL, unique=True)
-    bio = models.TextField(blank=True)
+    email = models.EmailField(
+        max_length=MAX_LENGTH_EMAIL, unique=True,
+        verbose_name='E-mail'
+    )
+    bio = models.TextField(blank=True, verbose_name='Биография')
     role = models.CharField(
-        max_length=MAX_LENGTH_ROLE, choices=ROLE_CHOICES, default=USER
+        max_length=MAX_LENGTH_ROLE, choices=ROLE_CHOICES, default=USER,
+        verbose_name='Роль'
     )
-    confirmation_code = models.CharField(max_length=MAX_LENGTH_CODE)
+    confirmation_code = models.CharField(
+        max_length=MAX_LENGTH_CODE, verbose_name='Код подтверждения'
+    )
 
     class Meta:
         ordering = ('username', )
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return f'{self.username} ({self.role})'
 
 
 class BaseModel(models.Model):
@@ -42,6 +54,9 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def __str__(self):
+        return f'{self.name} || {self.slug}'
 
 
 class Category(BaseModel):
@@ -90,6 +105,12 @@ class Title(models.Model):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
+    def __str__(self):
+        genres = ', '.join(genre.slug for genre in self.genre.all())
+        description = self.description if self.description else "N/A"
+        return (f'{self.name[:20]} || {self.year} || {self.category.slug[:20]}'
+                f' || {genres[:20]} || {description[:20]}')
+
 
 class Review(models.Model):
     '''Модель Отзывы'''
@@ -115,7 +136,8 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         related_name='reviews',
-        on_delete=models.DO_NOTHING
+        on_delete=models.DO_NOTHING,
+        verbose_name='Произведение'
     )
 
     class Meta:
@@ -129,17 +151,24 @@ class Review(models.Model):
         ]
         ordering = ('pub_date', )
 
+    def __str__(self):
+        return (f'{self.text[:20]} || {self.author.username[:20]} || '
+                f'{self.title.name[:20]} || {self.score} || '
+                f'{self.pub_date: %Y-%m-%d %H:%M:%S}')
+
 
 class Comments(models.Model):
     '''Модель комментарии'''
     text = models.CharField(max_length=256, verbose_name='Текст')
     author = models.ForeignKey(
         CustomUser, related_name='comments',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
     review = models.ForeignKey(
         Review, related_name='comments',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Отзыв произведения'
     )
     pub_date = models.DateTimeField(
         auto_now=True,
@@ -150,3 +179,8 @@ class Comments(models.Model):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ('pub_date', )
+
+    def __str__(self):
+        return (f'{self.text[:20]} || {self.author.username[:20]} || '
+                f'{self.review.text[:20]} || '
+                f'{self.pub_date: %Y-%m-%d %H:%M:%S}')

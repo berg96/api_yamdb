@@ -1,65 +1,41 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
-from reviews.models import Category, Comments, Genre, Review, Title
+from reviews.models import (Category, Comments, Genre, Review, Title,
+                            MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
+                            MAX_LENGTH_USERNAME)
+from reviews.validators import validate_username
+
 
 User = get_user_model()
 
 
 class SignupSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=254)
-    username = serializers.CharField(max_length=150)
-
-    def validate(self, data):
-        username = data['username']
-        email = data['email']
-        if username == 'me':
-            raise serializers.ValidationError(
-                'Нельзя использовать "me" в качестве username'
-            )
-        if User.objects.filter(email=email).exists():
-            if User.objects.get(email=email).username != username:
-                raise serializers.ValidationError(
-                    'Введенный email уже используется другим пользователем'
-                )
-        if User.objects.filter(username=username).exists():
-            if User.objects.get(username=username).email != email:
-                raise serializers.ValidationError(
-                    'Введенный email не соответствует '
-                    'зарегистрированному username'
-                )
-        return data
+    email = serializers.EmailField(
+        max_length=MAX_LENGTH_EMAIL, required=True
+    )
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[validate_username]
+    )
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(max_length=4)
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True
+    )
+    confirmation_code = serializers.CharField(
+        max_length=MAX_LENGTH_CODE, required=True
+    )
 
-    def validate_username(self, value):
-        _ = get_object_or_404(User, username=value)
-        return value
 
-
-class UserSerializerForAdmin(serializers.ModelSerializer):
-
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
-
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Нельзя использовать "me" в качестве username'
-            )
-        return value
-
-
-class UserSerializer(UserSerializerForAdmin):
-    role = serializers.CharField(read_only=True)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -74,7 +50,7 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
@@ -95,6 +71,24 @@ class TitleSerializer(serializers.ModelSerializer):
             title=obj
         ).aggregate(rating=Avg('score'))
         return rev['rating']
+
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+
+    class Meta:
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+        model = Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):

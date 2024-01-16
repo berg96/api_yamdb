@@ -65,12 +65,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
         model = Title
 
     def get_rating(self, obj):
-        if obj.reviews.count() == 0:
-            return None
-        rev = Review.objects.filter(
-            title=obj
-        ).aggregate(rating=Avg('score'))
-        return rev['rating']
+        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -83,12 +78,16 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
+
+    def get_rating(self, obj):
+        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
 
 
 class ReviewSerializer(serializers.ModelSerializer):

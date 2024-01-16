@@ -2,6 +2,7 @@ import random
 import os
 
 from django.db import IntegrityError
+from django.db.models import Avg
 from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -64,6 +65,7 @@ def signup(request):
         fail_silently=False,
     )
     user.confirmation_code = confirmation_code
+    user.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -146,7 +148,7 @@ class GenreViewSet(
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter

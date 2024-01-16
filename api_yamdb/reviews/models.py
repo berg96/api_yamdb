@@ -8,10 +8,10 @@ USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
 ROLE_CHOICES = (
-        (USER, 'User'),
-        (MODERATOR, 'Moderator'),
-        (ADMIN, 'Admin'),
-    )
+    (USER, 'User'),
+    (MODERATOR, 'Moderator'),
+    (ADMIN, 'Admin'),
+)
 MAX_LENGTH_USERNAME = 150
 MAX_LENGTH_EMAIL = 254
 MAX_LENGTH_ROLE = max(len(role) for tuple in ROLE_CHOICES for role in tuple)
@@ -98,8 +98,7 @@ class Title(models.Model):
     )
 
     description = models.TextField(
-        blank=True,
-        null=True,
+        blank=True, default='',
         verbose_name='Описание'
     )
 

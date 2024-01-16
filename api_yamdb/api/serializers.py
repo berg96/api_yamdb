@@ -1,12 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Avg
 from rest_framework import serializers
 
-from reviews.models import (Category, Comments, Genre, Review, Title,
-                            MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
-                            MAX_LENGTH_USERNAME)
+from reviews.models import (MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
+                            MAX_LENGTH_USERNAME, Category, Comments, Genre,
+                            Review, Title)
 from reviews.validators import validate_username
-
 
 User = get_user_model()
 
@@ -88,6 +86,14 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         return obj.rating if hasattr(obj, 'rating') and obj.rating else None
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['genre'] = GenreSerializer(
+            instance.genre.all(), many=True
+        ).data
+        representation['category'] = CategorySerializer(instance.category).data
+        return representation
 
 
 class ReviewSerializer(serializers.ModelSerializer):

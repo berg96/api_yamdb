@@ -3,7 +3,6 @@ import re
 
 from django.core.exceptions import ValidationError
 
-
 FORBIDDEN_USERNAME = 'me'
 PATTERN = r'^[\w.@+-]+\Z'
 

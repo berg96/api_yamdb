@@ -2,8 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .validators import correct_year, validate_username
-
+from .validators import validate_username, validate_year
 
 USER = 'user'
 MODERATOR = 'moderator'
@@ -83,7 +82,7 @@ class Genre(BaseCategoryGenreModel):
 class Title(models.Model):
     '''Модель Название'''
     name = models.CharField(max_length=256, verbose_name='Название')
-    year = models.IntegerField(validators=(correct_year,), verbose_name='Год')
+    year = models.IntegerField(validators=(validate_year,), verbose_name='Год')
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,

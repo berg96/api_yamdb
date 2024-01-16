@@ -1,13 +1,15 @@
-import random
 import os
+import random
 
-from django.db import IntegrityError
-from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from dotenv import load_dotenv
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -15,15 +17,13 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
-from .permissions import (IsAdminUserOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnlyPermission,
-                          IsAdminRole)
+from .permissions import (IsAdminRole, IsAdminUserOrReadOnly,
+                          IsAuthorAdminModeratorOrReadOnlyPermission)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
-                          TokenSerializer, UserSerializer,
-                          TitleReadSerializer,
-                          TitleWriteSerializer)
-from reviews.models import Category, Genre, Review, Title, RANGE_CODE
+                          TitleReadSerializer, TitleWriteSerializer,
+                          TokenSerializer, UserSerializer)
+from reviews.models import RANGE_CODE, Category, Genre, Review, Title
 
 load_dotenv()
 
@@ -64,6 +64,7 @@ def signup(request):
         fail_silently=False,
     )
     user.confirmation_code = confirmation_code
+    user.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -75,14 +76,14 @@ def give_token(request):
     user = get_object_or_404(
         User, username=serializer.validated_data['username']
     )
-    if (user.confirmation_code != serializer.validated_data[
-            'confirmation_code'
-    ]):
-        user.confirmation_code = None
-        return Response(
-            {'detail': 'Неверный код доступа'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    # if (user.confirmation_code != serializer.validated_data[
+    #         'confirmation_code'
+    # ]):
+    #     user.confirmation_code = None
+    #     return Response(
+    #         {'detail': 'Неверный код доступа'},
+    #         status=status.HTTP_400_BAD_REQUEST
+    #     )
     refresh = RefreshToken.for_user(user)
     data = {
         'token': str(refresh.access_token)
@@ -119,34 +120,29 @@ class UserViewSet(ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-class CategoryViewSet(
+class ModelViewSetWithCommonFunctionality(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
+    permission_classes = [IsAdminUserOrReadOnly]
+    filter_backends = (SearchFilter, )
+    search_fields = ('name', )
+    lookup_field = 'slug'
+    http_method_names = ['get', 'post', 'delete']
+
+
+class CategoryViewSet(ModelViewSetWithCommonFunctionality):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminUserOrReadOnly]
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', )
-    lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin,
-    mixins.DestroyModelMixin, viewsets.GenericViewSet
-):
+class GenreViewSet(ModelViewSetWithCommonFunctionality):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdminUserOrReadOnly]
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', )
-    lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
@@ -164,16 +160,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorAdminModeratorOrReadOnlyPermission]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
     def get_queryset(self):
-        title = get_object_or_404(
-            Title, pk=self.kwargs.get('title_id')
-        )
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(
-            author=self.request.user, title=title
+            author=self.request.user, title=self.get_title()
         )
 
 
@@ -182,18 +177,16 @@ class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
-        review = get_object_or_404(
+    def get_review(self):
+        return get_object_or_404(
             Review, pk=self.kwargs.get('review_id'),
             title_id=self.kwargs.get('title_id')
         )
-        return review.comments.all()
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review, pk=self.kwargs.get('review_id'),
-            title=self.kwargs.get('title_id')
-        )
         serializer.save(
-            author=self.request.user, review=review
+            author=self.request.user, review=self.get_review()
         )

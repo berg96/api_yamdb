@@ -1,12 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Avg
 from rest_framework import serializers
 
-from reviews.models import (Category, Comments, Genre, Review, Title,
-                            MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
-                            MAX_LENGTH_USERNAME)
+from reviews.models import (MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
+                            MAX_LENGTH_USERNAME, Category, Comments, Genre,
+                            Review, Title)
 from reviews.validators import validate_username
-
 
 User = get_user_model()
 
@@ -65,12 +63,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
         model = Title
 
     def get_rating(self, obj):
-        if obj.reviews.count() == 0:
-            return None
-        rev = Review.objects.filter(
-            title=obj
-        ).aggregate(rating=Avg('score'))
-        return rev['rating']
+        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -83,12 +76,24 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
+
+    def get_rating(self, obj):
+        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['genre'] = GenreSerializer(
+            instance.genre.all(), many=True
+        ).data
+        representation['category'] = CategorySerializer(instance.category).data
+        return representation
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -101,10 +106,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, data):
-        if Review.objects.filter(
+        if self.context['request'].method == 'POST' and Review.objects.filter(
             author=self.context['request'].user,
             title_id=self.context['view'].kwargs.get('title_id')
-        ).exists() and self.context['request'].method == 'POST':
+        ).exists():
             raise serializers.ValidationError(
                 'Нельзя оставить два отзыва на одно произведение.')
         return data
@@ -118,4 +123,3 @@ class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comments
-        read_only_fields = ('title', 'author')

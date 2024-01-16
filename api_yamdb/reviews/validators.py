@@ -3,17 +3,17 @@ import re
 
 from django.core.exceptions import ValidationError
 
-
 FORBIDDEN_USERNAME = 'me'
 PATTERN = r'^[\w.@+-]+\Z'
 
 
-def correct_year(value):
+def validate_year(year):
     current_year = datetime.date.today().year
-    if value > current_year:
+    if year > current_year:
         raise ValidationError(
-            'Введенная дата больше текущего года'
+            f'Введенная дата больше текущего года: {year} > {current_year}'
         )
+    return year
 
 
 def validate_username(username):
@@ -26,3 +26,4 @@ def validate_username(username):
         raise ValidationError(
             f'Username не соответствует паттерну {PATTERN}: {username}'
         )
+    return username

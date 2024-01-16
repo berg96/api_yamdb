@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -121,30 +122,25 @@ class UserViewSet(ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-class CategoryViewSet(
+class ModelViewSetWithCommonFunctionality(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
+    permission_classes = [IsAdminUserOrReadOnly]
+    filter_backends = (SearchFilter, )
+    search_fields = ('name', )
+    lookup_field = 'slug'
+    http_method_names = ['get', 'post', 'delete']
+
+
+class CategoryViewSet(ModelViewSetWithCommonFunctionality):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminUserOrReadOnly]
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', )
-    lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin,
-    mixins.DestroyModelMixin, viewsets.GenericViewSet
-):
+class GenreViewSet(ModelViewSetWithCommonFunctionality):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdminUserOrReadOnly]
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', )
-    lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -166,16 +162,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorAdminModeratorOrReadOnlyPermission]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
     def get_queryset(self):
-        title = get_object_or_404(
-            Title, pk=self.kwargs.get('title_id')
-        )
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(
-            author=self.request.user, title=title
+            author=self.request.user, title=self.get_title()
         )
 
 
@@ -184,18 +179,16 @@ class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
-        review = get_object_or_404(
+    def get_review(self):
+        return get_object_or_404(
             Review, pk=self.kwargs.get('review_id'),
             title_id=self.kwargs.get('title_id')
         )
-        return review.comments.all()
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review, pk=self.kwargs.get('review_id'),
-            title=self.kwargs.get('title_id')
-        )
         serializer.save(
-            author=self.request.user, review=review
+            author=self.request.user, review=self.get_review()
         )

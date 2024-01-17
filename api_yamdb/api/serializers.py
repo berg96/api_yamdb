@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
-from reviews.models import (MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
-                            MAX_LENGTH_USERNAME, Category, Comments, Genre,
-                            Review, Title)
+from reviews.models import (
+    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,MAX_LENGTH_USERNAME, Category, Comments,
+    Genre,Review, Title
+)
 from reviews.validators import validate_username
 
 User = get_user_model()
@@ -21,7 +23,8 @@ class SignupSerializer(serializers.Serializer):
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME, required=True
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[validate_username]
     )
     confirmation_code = serializers.CharField(
         max_length=MAX_LENGTH_CODE, required=True
@@ -29,6 +32,13 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[
+            validate_username, UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
     class Meta:
         model = User
         fields = (
@@ -54,16 +64,13 @@ class TitleReadSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True
     )
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.FloatField(read_only=True, default=None)
 
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
-
-    def get_rating(self, obj):
-        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -76,24 +83,16 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
-    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'description', 'genre', 'category'
         )
         model = Title
 
-    def get_rating(self, obj):
-        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
-
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['genre'] = GenreSerializer(
-            instance.genre.all(), many=True
-        ).data
-        representation['category'] = CategorySerializer(instance.category).data
-        return representation
+        representation = TitleReadSerializer(instance)
+        return representation.data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

@@ -1,16 +1,23 @@
 from rest_framework import permissions
 
-from reviews.models import ADMIN, MODERATOR
+
+def is_admin_or_superuser(user):
+    return user.is_admin() or user.is_staff or user.is_superuser
 
 
-class IsAdminUserOrReadOnly(permissions.BasePermission):
+class IsAdminOrSuperuser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated
+                and is_admin_or_superuser(request.user))
+
+
+class IsAdminUserOrReadOnly(IsAdminOrSuperuser):
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
-                or request.user.is_authenticated
-                and (request.user.role == ADMIN or request.user.is_superuser))
+                or super().has_permission(request, view))
 
 
-class IsAuthorAdminModeratorOrReadOnlyPermission(permissions.BasePermission):
+class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
     message = (
         'Проверка пользователя является ли он администратором, модератором'
         'или автором объекта, иначе только режим чтения'
@@ -26,10 +33,3 @@ class IsAuthorAdminModeratorOrReadOnlyPermission(permissions.BasePermission):
                     or request.user.role == ADMIN
                     or request.user.role == MODERATOR
                     or obj.author == request.user))
-
-
-class IsAdminRole(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.role == ADMIN or request.user.is_superuser
-        )

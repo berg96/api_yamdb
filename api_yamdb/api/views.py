@@ -17,8 +17,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
-from .permissions import (IsAdminRole, IsAdminUserOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnlyPermission)
+from .permissions import (IsAdminOrSuperuser, IsAdminUserOrReadOnly,
+                          IsAuthorAdminModeratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
                           TitleReadSerializer, TitleWriteSerializer,
@@ -76,14 +76,14 @@ def give_token(request):
     user = get_object_or_404(
         User, username=serializer.validated_data['username']
     )
-    # if (user.confirmation_code != serializer.validated_data[
-    #         'confirmation_code'
-    # ]):
-    #     user.confirmation_code = None
-    #     return Response(
-    #         {'detail': 'Неверный код доступа'},
-    #         status=status.HTTP_400_BAD_REQUEST
-    #     )
+    if (user.confirmation_code != serializer.validated_data[
+            'confirmation_code'
+    ]):
+        user.confirmation_code = None
+        return Response(
+            {'detail': 'Неверный код доступа'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     refresh = RefreshToken.for_user(user)
     data = {
         'token': str(refresh.access_token)
@@ -94,7 +94,7 @@ def give_token(request):
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrSuperuser]
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -157,7 +157,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorAdminModeratorOrReadOnlyPermission]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
@@ -173,7 +173,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthorAdminModeratorOrReadOnlyPermission]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 

@@ -50,6 +50,14 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f'{self.username} ({self.role})'
 
+    def is_admin(self):
+        if self.role == ADMIN:
+            return True
+
+    def is_moderator(self):
+        if self.role == MODERATOR:
+            return True
+
 
 class BaseCategoryGenreModel(models.Model):
     '''Базовая модель для Категории и Жанра'''

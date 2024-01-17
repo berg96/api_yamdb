@@ -54,16 +54,13 @@ class TitleReadSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True
     )
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.FloatField(read_only=True, default=None)
 
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
-
-    def get_rating(self, obj):
-        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -76,7 +73,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.FloatField(read_only=True, default=None)
 
     class Meta:
         fields = (
@@ -84,16 +81,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         )
         model = Title
 
-    def get_rating(self, obj):
-        return obj.rating if hasattr(obj, 'rating') and obj.rating else None
-
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['genre'] = GenreSerializer(
-            instance.genre.all(), many=True
-        ).data
-        representation['category'] = CategorySerializer(instance.category).data
-        return representation
+        representation = TitleReadSerializer(instance)
+        return representation.data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

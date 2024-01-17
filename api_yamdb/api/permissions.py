@@ -11,13 +11,13 @@ class IsAdminOrSuperuser(permissions.BasePermission):
                 and is_admin_or_superuser(request.user))
 
 
-class IsAdminUserOrReadOnly(IsAdminOrSuperuser):
+class IsAdminSuperuserOrReadOnly(IsAdminOrSuperuser):
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
                 or super().has_permission(request, view))
 
 
-class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
+class IsAuthorAdminSuperuserModeratorOrReadOnly(permissions.BasePermission):
     message = (
         'Проверка пользователя является ли он администратором, модератором'
         'или автором объекта, иначе только режим чтения'
@@ -29,7 +29,6 @@ class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
-                or (request.user.is_superuser
-                    or request.user.role == ADMIN
-                    or request.user.role == MODERATOR
+                or (is_admin_or_superuser(request.user)
+                    or request.user.is_moderator()
                     or obj.author == request.user))

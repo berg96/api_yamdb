@@ -17,8 +17,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
-from .permissions import (IsAdminOrSuperuser, IsAdminUserOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnly)
+from .permissions import (IsAdminOrSuperuser, IsAdminSuperuserOrReadOnly,
+                          IsAuthorAdminSuperuserModeratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReviewSerializer, SignupSerializer,
                           TitleReadSerializer, TitleWriteSerializer,
@@ -80,6 +80,7 @@ def give_token(request):
             'confirmation_code'
     ]):
         user.confirmation_code = None
+        user.save()
         return Response(
             {'detail': 'Неверный код доступа'},
             status=status.HTTP_400_BAD_REQUEST
@@ -101,7 +102,7 @@ class UserViewSet(ModelViewSet):
 
     @action(
         detail=False,
-        methods=['get', 'patch',],
+        methods=['get', 'patch'],
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):
@@ -124,7 +125,7 @@ class ModelViewSetWithCommonFunctionality(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminSuperuserOrReadOnly]
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -143,7 +144,7 @@ class GenreViewSet(ModelViewSetWithCommonFunctionality):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminSuperuserOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -157,7 +158,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
+    permission_classes = [IsAuthorAdminSuperuserModeratorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
@@ -173,7 +174,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
+    permission_classes = [IsAuthorAdminSuperuserModeratorOrReadOnly]
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 

@@ -77,6 +77,7 @@ def give_token(request):
             'confirmation_code'
     ]):
         user.confirmation_code = None
+        user.save()
         return Response(
             {'detail': 'Неверный код доступа'},
             status=status.HTTP_400_BAD_REQUEST
@@ -98,7 +99,7 @@ class UserViewSet(ModelViewSet):
 
     @action(
         detail=False,
-        methods=['get', 'patch',],
+        methods=['get', 'patch'],
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):

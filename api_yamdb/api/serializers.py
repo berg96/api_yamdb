@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from reviews.models import (
-    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,MAX_LENGTH_USERNAME, Category, Comment,
+    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment,
     Genre, Review, Title
 )
 from reviews.validators import validate_username

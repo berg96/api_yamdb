@@ -1,5 +1,3 @@
-import random
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
@@ -17,15 +15,16 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
-from .permissions import (IsAdminOrSuperuser, IsAdminSuperuserOrReadOnly,
-                          IsAuthorAdminSuperuserModeratorOrReadOnly)
-from .serializers import (CategorySerializer, CommentsSerializer,
-                          GenreSerializer, ReviewSerializer, SignupSerializer,
-                          TitleReadSerializer, TitleWriteSerializer,
-                          TokenSerializer, UserSerializer,
-                          UserSerializerForAdmin)
+from .permissions import (
+    IsAdminOrSuperuser, IsAdminSuperuserOrReadOnly,
+    IsAuthorAdminSuperuserModeratorOrReadOnly
+)
+from .serializers import (
+    CategorySerializer, CommentsSerializer, GenreSerializer, ReviewSerializer,
+    SignupSerializer, TitleReadSerializer, TitleWriteSerializer,
+    TokenSerializer, UserSerializer, UserSerializerForAdmin
+)
 from reviews.models import Category, Genre, Review, Title
-
 
 User = get_user_model()
 

@@ -13,6 +13,7 @@ class TitleInlineGenre(admin.TabularInline):
     extra = 0
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     inlines = (
         TitleInline,
@@ -22,6 +23,7 @@ class CategoryAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     inlines = (
         TitleInlineGenre,
@@ -36,6 +38,7 @@ class ReviewInLine(admin.StackedInline):
     extra = 0
 
 
+@admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'year', 'category', 'display_genres', 'description'
@@ -58,6 +61,7 @@ class CommentsInLine(admin.StackedInline):
     extra = 0
 
 
+@admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = (
         'text', 'author', 'title', 'score', 'pub_date'
@@ -67,6 +71,7 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ('text', )
 
 
+@admin.register(Comments)
 class CommentsAdmin(admin.ModelAdmin):
     list_display = (
         'text', 'author', 'review', 'pub_date'
@@ -75,15 +80,8 @@ class CommentsAdmin(admin.ModelAdmin):
     search_fields = ('text', )
 
 
+@admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = (
         'username', 'email', 'role'
     )
-
-
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Genre, GenreAdmin)
-admin.site.register(Title, TitleAdmin)
-admin.site.register(Review, ReviewAdmin)
-admin.site.register(Comments, CommentsAdmin)
-admin.site.register(CustomUser, CustomUserAdmin)

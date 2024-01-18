@@ -6,7 +6,6 @@ from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from dotenv import load_dotenv
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import SearchFilter
@@ -24,8 +23,6 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           TitleReadSerializer, TitleWriteSerializer,
                           TokenSerializer, UserSerializer)
 from reviews.models import RANGE_CODE, Category, Genre, Review, Title
-
-load_dotenv()
 
 User = get_user_model()
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')

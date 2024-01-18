@@ -139,8 +139,14 @@ class Review(BaseReviewCommentModel):
     '''Модель Отзывы'''
     score = models.IntegerField(
         validators=[
-            MinValueValidator(MIN_SCORE, message='Оценка должна быть от 1'),
-            MaxValueValidator(MAX_SCORE, message='Оценка должна быть до 10')
+            MinValueValidator(
+                MIN_SCORE,
+                message=f'Оценка должна быть от {MIN_SCORE}'
+            ),
+            MaxValueValidator(
+                MAX_SCORE,
+                message=f'Оценка должна быть до {MAX_SCORE}'
+            )
         ],
         verbose_name='Оценка'
     )

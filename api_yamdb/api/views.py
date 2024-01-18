@@ -70,7 +70,7 @@ def give_token(request):
     if (user.confirmation_code != serializer.validated_data[
             'confirmation_code'
     ]):
-        user.confirmation_code = "INVALID_CODE"
+        user.confirmation_code = 'INVALID_CODE'
         user.save()
         return Response(
             {'detail': 'Неверный код доступа'},
@@ -109,7 +109,7 @@ class UserViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ListCreateDestroyViewSet(
+class ClassificationViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
@@ -119,12 +119,12 @@ class ListCreateDestroyViewSet(
     lookup_field = 'slug'
 
 
-class CategoryViewSet(ListCreateDestroyViewSet):
+class CategoryViewSet(ClassificationViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(ListCreateDestroyViewSet):
+class GenreViewSet(ClassificationViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 

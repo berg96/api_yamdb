@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Comments, CustomUser, Genre, Review, Title
+from .models import Category, Comment, CustomUser, Genre, Review, Title
 
 
 class TitleInline(admin.StackedInline):
@@ -56,8 +56,8 @@ class TitleAdmin(admin.ModelAdmin):
     display_genres.short_description = 'Жанр'
 
 
-class CommentsInLine(admin.StackedInline):
-    model = Comments
+class CommentInLine(admin.StackedInline):
+    model = Comment
     extra = 0
 
 
@@ -66,13 +66,13 @@ class ReviewAdmin(admin.ModelAdmin):
     list_display = (
         'text', 'author', 'title', 'score', 'pub_date'
     )
-    inlines = (CommentsInLine, )
+    inlines = (CommentInLine, )
     list_filter = ('score', 'title')
     search_fields = ('text', )
 
 
-@admin.register(Comments)
-class CommentsAdmin(admin.ModelAdmin):
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
     list_display = (
         'text', 'author', 'review', 'pub_date'
     )

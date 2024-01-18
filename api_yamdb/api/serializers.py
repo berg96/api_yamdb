@@ -3,8 +3,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from reviews.models import (
-    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,MAX_LENGTH_USERNAME, Category, Comments,
-    Genre,Review, Title
+    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,MAX_LENGTH_USERNAME, Category, Comment,
+    Genre, Review, Title
 )
 from reviews.validators import validate_username
 
@@ -126,4 +126,4 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
-        model = Comments
+        model = Comment

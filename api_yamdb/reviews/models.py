@@ -55,8 +55,7 @@ class CustomUser(AbstractUser):
         return f'{self.username} ({self.role})'
 
     def is_admin(self):
-        if self.role == ADMIN:
-            return True
+        return self.role == ADMIN or self.is_staff
 
     def is_moderator(self):
         if self.role == MODERATOR:

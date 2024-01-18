@@ -16,8 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
 from .permissions import (
-    IsAdminOrSuperuser, IsAdminSuperuserOrReadOnly,
-    IsAuthorAdminSuperuserModeratorOrReadOnly
+    IsAdmin, IsAdminOrReadOnly, IsAuthorAdminModeratorOrReadOnly
 )
 from .serializers import (
     CategorySerializer, CommentsSerializer, GenreSerializer, ReviewSerializer,
@@ -87,7 +86,7 @@ def give_token(request):
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializerForAdmin
-    permission_classes = [IsAdminOrSuperuser]
+    permission_classes = [IsAdmin]
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -114,7 +113,7 @@ class ListCreateDestroyViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [IsAdminSuperuserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -134,7 +133,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     ).order_by('name')
-    permission_classes = [IsAdminSuperuserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -148,7 +147,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorAdminSuperuserModeratorOrReadOnly]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
@@ -164,7 +163,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthorAdminSuperuserModeratorOrReadOnly]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 

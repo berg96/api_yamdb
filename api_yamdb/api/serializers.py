@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
-from reviews.models import (MAX_LENGTH_CODE, MAX_LENGTH_EMAIL,
-                            MAX_LENGTH_USERNAME, Category, Comments, Genre,
-                            Review, Title)
+from reviews.models import (
+    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment,
+    Genre, Review, Title
+)
 from reviews.validators import validate_username
 
 User = get_user_model()
@@ -21,19 +23,32 @@ class SignupSerializer(serializers.Serializer):
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME, required=True
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[validate_username]
     )
     confirmation_code = serializers.CharField(
         max_length=MAX_LENGTH_CODE, required=True
     )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializerForAdmin(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True,
+        validators=[
+            validate_username, UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
     class Meta:
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
+
+
+class UserSerializer(UserSerializerForAdmin):
+    class Meta(UserSerializerForAdmin.Meta):
+        read_only_fields = ('role', )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -73,11 +88,10 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
-    rating = serializers.FloatField(read_only=True, default=None)
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'description', 'genre', 'category'
         )
         model = Title
 
@@ -112,4 +126,4 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
-        model = Comments
+        model = Comment

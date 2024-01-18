@@ -132,3 +132,5 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = os.getenv('SENDER_EMAIL')
+
+SELF_PROFILE_NAME = 'me'

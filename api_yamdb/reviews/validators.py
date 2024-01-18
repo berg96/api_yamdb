@@ -1,9 +1,9 @@
 import datetime
 import re
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
-FORBIDDEN_USERNAME = 'me'
 PATTERN = r'^[\w.@+-]+\Z'
 
 
@@ -17,13 +17,16 @@ def validate_year(year):
 
 
 def validate_username(username):
-    if username == FORBIDDEN_USERNAME:
+    if username == settings.SELF_PROFILE_NAME:
         raise ValidationError(
-            f'Нельзя использовать "{FORBIDDEN_USERNAME}" '
+            f'Нельзя использовать "{settings.SELF_PROFILE_NAME}" '
             'в качестве username'
         )
     if not re.fullmatch(PATTERN, username):
+        invalid_chars = ", ".join(
+            char for char in username if not re.match(PATTERN, char)
+        )
         raise ValidationError(
-            f'Username не соответствует паттерну {PATTERN}: {username}'
+            f'Символы в username, не соответствующие паттерну: {invalid_chars}'
         )
     return username

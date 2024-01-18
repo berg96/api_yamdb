@@ -69,15 +69,15 @@ def give_token(request):
     user = get_object_or_404(
         User, username=serializer.validated_data['username']
     )
-    # if (user.confirmation_code != serializer.validated_data[
-    #         'confirmation_code'
-    # ]):
-    #     user.confirmation_code = "INVALID_CODE"
-    #     user.save()
-    #     return Response(
-    #         {'detail': 'Неверный код доступа'},
-    #         status=status.HTTP_400_BAD_REQUEST
-    #     )
+    if (user.confirmation_code != serializer.validated_data[
+            'confirmation_code'
+    ]):
+        user.confirmation_code = "INVALID_CODE"
+        user.save()
+        return Response(
+            {'detail': 'Неверный код доступа'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     refresh = RefreshToken.for_user(user)
     data = {
         'token': str(refresh.access_token)
@@ -98,7 +98,7 @@ class UserViewSet(ModelViewSet):
         detail=False,
         methods=['get', 'patch'],
         permission_classes=[IsAuthenticated],
-        url_path='me'
+        url_path=settings.SELF_PROFILE_NAME
     )
     def profile(self, request):
         user = request.user

@@ -31,7 +31,7 @@ class TokenSerializer(serializers.Serializer):
     )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializerForAdmin(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=MAX_LENGTH_USERNAME, required=True,
         validators=[
@@ -44,6 +44,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
+
+
+class UserSerializer(UserSerializerForAdmin):
+    class Meta(UserSerializerForAdmin.Meta):
+        read_only_fields = ('role', )
 
 
 class CategorySerializer(serializers.ModelSerializer):

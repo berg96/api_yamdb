@@ -1,10 +1,6 @@
-import os
 from datetime import timedelta
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -131,6 +127,6 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = os.getenv('SENDER_EMAIL')
+DEFAULT_FROM_EMAIL = 'yamdb-team5@yandex.ru'
 
 SELF_PROFILE_NAME = 'me'

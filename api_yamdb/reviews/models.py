@@ -14,7 +14,6 @@ ROLE_CHOICES = (
 )
 MAX_LENGTH_USERNAME = 150
 MAX_LENGTH_EMAIL = 254
-MAX_LENGTH_ROLE = max(len(role[0]) for role in ROLE_CHOICES)
 MAX_LENGTH_CODE = 128
 MAX_LENGTH_SLUG = 50
 MAX_LENGTH_NAME = 256
@@ -37,7 +36,7 @@ class CustomUser(AbstractUser):
     )
     bio = models.TextField(blank=True, verbose_name='Биография')
     role = models.CharField(
-        max_length=max(len(role[0]) for role in ROLE_CHOICES),
+        max_length=max(len(role) for role, _ in ROLE_CHOICES),
         choices=ROLE_CHOICES, default=USER,
         verbose_name='Роль'
     )
@@ -58,8 +57,7 @@ class CustomUser(AbstractUser):
         return self.role == ADMIN or self.is_staff
 
     def is_moderator(self):
-        if self.role == MODERATOR:
-            return True
+        return self.role == MODERATOR
 
 
 class BaseSlugModel(models.Model):

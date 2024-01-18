@@ -14,27 +14,24 @@
 
 ### Тимлид проекта Артём Куликов
 
-tg: @Berg1005
+tg: [@Berg1005](https://t.me/berg1005)
 
-github: https://github.com/berg96
+[GitHub](https://github.com/berg96)
 
 ### Соавтор Кагиров Денис
 
-tg: @Denis_Kagirov
+tg: [@Denis_Kagirov](https://t.me/Denis_Kagirov)
 
-github: https://github.com/KagirovDenis
+[GitHub](https://github.com/KagirovDenis)
 
 ## Используемые технологии 
 
 Проек реализован на языке python c использованием следюующих библиотек: 
 
-Django (v 3.2.16) 
-
-djangorestframework(v 3.12.4) 
-
-djangorestframework-simplejwt (v 5.3.1) 
-
-requests (v 2.26.0) 
+* Django (v 3.2.16) 
+* djangorestframework(v 3.12.4) 
+* djangorestframework-simplejwt (v 5.3.1) 
+* requests (v 2.26.0)
 
 и др. 
 
@@ -74,46 +71,4 @@ python manage.py csvall
 python manage.py runserver
 ```
 
-## Импорт данных из csv-файлов
-Чтобы импортировать Пользователей в Базу Данных:
-```
-python manage.py csv1user
-```
-
-Чтобы импортировать Жанры в Базу Данных:
-```
-python manage.py csv2genre
-```
-
-Чтобы импортировать Категории в Базу Данных:
-```
-python manage.py csv3category
-```
-
-Чтобы импортировать Произведения в Базу Данных:
-```
-python manage.py csv4title
-```
-
-Чтобы импортировать таблицу связей между Произведениями и Жанрами в Базу Данных:
-```
-python manage.py csv5genretitle
-```
-
-Чтобы импортировать Отзывы в Базу Данных:
-```
-python manage.py csv6review
-```
-
-Чтобы импортировать Комментарии в Базу Данных:
-```
-python manage.py csv7comment
-```
-
-Для импорта данных из всех файлов сразу:
-```
-python manage.py csvall
-```
-
-## Документация:
-http://127.0.0.1:8000/redoc/
+## [Документация](http://127.0.0.1:8000/redoc/)

@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reviews.models import (
-    MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment,
-    Genre, Review, Title
+    MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment, Genre, Review,
+    Title
 )
 from reviews.validators import validate_username
 

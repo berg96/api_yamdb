@@ -1,3 +1,5 @@
+import random
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
@@ -23,7 +25,7 @@ from .serializers import (
     SignupSerializer, TitleReadSerializer, TitleWriteSerializer,
     TokenSerializer, UserSerializer, UserSerializerForAdmin
 )
-from reviews.models import Category, Genre, Review, Title
+from reviews.models import RANGE_CODE, Category, Genre, Review, Title
 
 User = get_user_model()
 
@@ -46,7 +48,7 @@ def signup(request):
                  User.objects.filter(**{key: value}).exists()),
             status=status.HTTP_400_BAD_REQUEST
         )
-    confirmation_code = default_token_generator.make_token(user)
+    confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',
         f'Ваш код подтверждения: {confirmation_code}',
@@ -54,6 +56,8 @@ def signup(request):
         [email],
         fail_silently=False,
     )
+    user.confirmation_code = confirmation_code
+    user.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -65,9 +69,11 @@ def give_token(request):
     user = get_object_or_404(
         User, username=serializer.validated_data['username']
     )
-    if not default_token_generator.check_token(
-            user, serializer.validated_data['confirmation_code']
-    ):
+    confirmation_code = serializer.validated_data['confirmation_code']
+    if (user.confirmation_code != confirmation_code or
+            confirmation_code == settings.INVALID_CODE):
+        user.confirmation_code = settings.INVALID_CODE
+        user.save()
         return Response(
             {'detail': 'Неверный код доступа'},
             status=status.HTTP_400_BAD_REQUEST

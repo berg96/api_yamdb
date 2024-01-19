@@ -14,7 +14,8 @@ ROLE_CHOICES = (
 )
 MAX_LENGTH_USERNAME = 150
 MAX_LENGTH_EMAIL = 254
-MAX_LENGTH_CODE = 128
+MAX_LENGTH_CODE = 5
+RANGE_CODE = (10000, 99999)
 MAX_LENGTH_SLUG = 50
 MAX_LENGTH_NAME = 256
 MAX_LENGTH_NAME_TITLE = 256
@@ -39,6 +40,10 @@ class CustomUser(AbstractUser):
         max_length=max(len(role) for role, _ in ROLE_CHOICES),
         choices=ROLE_CHOICES, default=USER,
         verbose_name='Роль'
+    )
+    confirmation_code = models.CharField(
+        max_length=MAX_LENGTH_CODE, blank=True, null=True,
+        editable=False, verbose_name='Код подтверждения'
     )
 
     class Meta:

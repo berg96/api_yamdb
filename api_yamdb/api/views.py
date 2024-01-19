@@ -1,6 +1,7 @@
+import random
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
@@ -16,15 +17,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import TitleFilter
 from .permissions import (
-    IsAdminOrSuperuser, IsAdminSuperuserOrReadOnly,
-    IsAuthorAdminSuperuserModeratorOrReadOnly
+    IsAdmin, IsAdminOrReadOnly, IsAuthorAdminModeratorOrReadOnly
 )
 from .serializers import (
     CategorySerializer, CommentsSerializer, GenreSerializer, ReviewSerializer,
     SignupSerializer, TitleReadSerializer, TitleWriteSerializer,
     TokenSerializer, UserSerializer, UserSerializerForAdmin
 )
-from reviews.models import Category, Genre, Review, Title
+from reviews.models import RANGE_CODE, Category, Genre, Review, Title
 
 User = get_user_model()
 
@@ -41,13 +41,15 @@ def signup(request):
     try:
         user, _ = User.objects.get_or_create(email=email, username=username)
     except IntegrityError:
-        return Response(
-            dict((key, [value, ERROR_IN_USE]) for key, value in
-                 {'username': username, 'email': email}.items() if
-                 User.objects.filter(**{key: value}).exists()),
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    confirmation_code = default_token_generator.make_token(user)
+        result = {}
+        if User.objects.filter(username=username).exists():
+            result['username'] = [username, ERROR_IN_USE]
+            if User.objects.filter(email=email).exists():
+                result['email'] = [email, ERROR_IN_USE]
+        else:
+            result['email'] = [email, ERROR_IN_USE]
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',
         f'Ваш код подтверждения: {confirmation_code}',
@@ -68,10 +70,10 @@ def give_token(request):
     user = get_object_or_404(
         User, username=serializer.validated_data['username']
     )
-    if (user.confirmation_code != serializer.validated_data[
-            'confirmation_code'
-    ]):
-        user.confirmation_code = "INVALID_CODE"
+    confirmation_code = serializer.validated_data['confirmation_code']
+    if (user.confirmation_code != confirmation_code
+            or confirmation_code == settings.INVALID_CODE):
+        user.confirmation_code = settings.INVALID_CODE
         user.save()
         return Response(
             {'detail': 'Неверный код доступа'},
@@ -87,7 +89,7 @@ def give_token(request):
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializerForAdmin
-    permission_classes = [IsAdminOrSuperuser]
+    permission_classes = [IsAdmin]
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -110,22 +112,22 @@ class UserViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ListCreateDestroyViewSet(
+class ClassificationViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [IsAdminSuperuserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
 
 
-class CategoryViewSet(ListCreateDestroyViewSet):
+class CategoryViewSet(ClassificationViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(ListCreateDestroyViewSet):
+class GenreViewSet(ClassificationViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
@@ -134,7 +136,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     ).order_by('name')
-    permission_classes = [IsAdminSuperuserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -148,7 +150,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorAdminSuperuserModeratorOrReadOnly]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
@@ -164,7 +166,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthorAdminSuperuserModeratorOrReadOnly]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
     serializer_class = CommentsSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
 

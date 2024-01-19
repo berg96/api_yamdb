@@ -2,7 +2,7 @@ import csv
 
 from django.core.management import BaseCommand
 
-from reviews.models import Comments
+from reviews.models import Comment
 
 
 class Command(BaseCommand):
@@ -13,7 +13,7 @@ class Command(BaseCommand):
         with open(file_path, 'r', encoding='utf8') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                _, created = Comments.objects.get_or_create(
+                Comment.objects.get_or_create(
                     id=row['id'],
                     text=row['text'],
                     pub_date=row['pub_date'],

@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import (
     MAX_LENGTH_CODE, MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment,
@@ -11,34 +10,32 @@ from reviews.validators import validate_username
 User = get_user_model()
 
 
-class SignupSerializer(serializers.Serializer):
+class ValidateUsernameMixin(serializers.Serializer):
+    def validate_username(self, username):
+        return validate_username(username)
+
+
+class SignupSerializer(ValidateUsernameMixin, serializers.Serializer):
     email = serializers.EmailField(
         max_length=MAX_LENGTH_EMAIL, required=True
     )
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME, required=True,
-        validators=[validate_username]
+        max_length=MAX_LENGTH_USERNAME, required=True
     )
 
 
-class TokenSerializer(serializers.Serializer):
+class TokenSerializer(ValidateUsernameMixin, serializers.Serializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME, required=True,
-        validators=[validate_username]
+        max_length=MAX_LENGTH_USERNAME, required=True
     )
     confirmation_code = serializers.CharField(
         max_length=MAX_LENGTH_CODE, required=True
     )
 
 
-class UserSerializerForAdmin(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME, required=True,
-        validators=[
-            validate_username, UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-
+class UserSerializerForAdmin(
+    ValidateUsernameMixin, serializers.ModelSerializer
+):
     class Meta:
         model = User
         fields = (
@@ -69,7 +66,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True
     )
-    rating = serializers.FloatField(read_only=True, default=None)
+    rating = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         fields = (
@@ -96,8 +93,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         model = Title
 
     def to_representation(self, instance):
-        representation = TitleReadSerializer(instance)
-        return representation.data
+        return TitleReadSerializer(instance).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

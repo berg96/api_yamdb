@@ -2,7 +2,6 @@ import random
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
@@ -42,12 +41,14 @@ def signup(request):
     try:
         user, _ = User.objects.get_or_create(email=email, username=username)
     except IntegrityError:
-        return Response(
-            dict((key, [value, ERROR_IN_USE]) for key, value in
-                 {'username': username, 'email': email}.items() if
-                 User.objects.filter(**{key: value}).exists()),
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        result = {}
+        if User.objects.filter(username=username).exists():
+            result['username'] = [username, ERROR_IN_USE]
+            if User.objects.filter(email=email).exists():
+                result['email'] = [email, ERROR_IN_USE]
+        else:
+            result['email'] = [email, ERROR_IN_USE]
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',
@@ -70,8 +71,8 @@ def give_token(request):
         User, username=serializer.validated_data['username']
     )
     confirmation_code = serializer.validated_data['confirmation_code']
-    if (user.confirmation_code != confirmation_code or
-            confirmation_code == settings.INVALID_CODE):
+    if (user.confirmation_code != confirmation_code
+            or confirmation_code == settings.INVALID_CODE):
         user.confirmation_code = settings.INVALID_CODE
         user.save()
         return Response(

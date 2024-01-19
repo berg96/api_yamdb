@@ -23,10 +23,7 @@ def validate_username(username):
             'в качестве username'
         )
     if not re.fullmatch(PATTERN, username):
-        invalid_chars = ", ".join(
-            char for char in username if not re.match(PATTERN, char)
-        )
         raise ValidationError(
-            f'Символы в username, не соответствующие паттерну: {invalid_chars}'
+            f'Недопустимые символы в username: {re.sub(PATTERN, "", username)}'
         )
     return username

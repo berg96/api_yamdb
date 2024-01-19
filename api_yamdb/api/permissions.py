@@ -1,23 +1,22 @@
 from rest_framework import permissions
 
 
-def is_admin_or_superuser(user):
-    return user.is_admin() or user.is_staff or user.is_superuser
+class IsAdmin(permissions.BasePermission):
+    def is_admin(self, user):
+        return user.is_admin()
 
-
-class IsAdminOrSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
         return (request.user.is_authenticated
-                and is_admin_or_superuser(request.user))
+                and self.is_admin(request.user))
 
 
-class IsAdminSuperuserOrReadOnly(IsAdminOrSuperuser):
+class IsAdminOrReadOnly(IsAdmin):
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
                 or super().has_permission(request, view))
 
 
-class IsAuthorAdminSuperuserModeratorOrReadOnly(permissions.BasePermission):
+class IsAuthorAdminModeratorOrReadOnly(IsAdmin):
     message = (
         'Проверка пользователя является ли он администратором, модератором'
         'или автором объекта, иначе только режим чтения'
@@ -29,6 +28,6 @@ class IsAuthorAdminSuperuserModeratorOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
-                or (is_admin_or_superuser(request.user)
+                or (super().is_admin(request.user)
                     or request.user.is_moderator()
                     or obj.author == request.user))

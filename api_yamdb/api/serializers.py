@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reviews.models import (
-    MAX_LENGTH_CODE, MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment,
+    MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME, Category, Comment,
     Genre, Review, Title
 )
 from reviews.validators import validate_username
@@ -29,7 +30,7 @@ class TokenSerializer(ValidateUsernameMixin, serializers.Serializer):
         max_length=MAX_LENGTH_USERNAME, required=True
     )
     confirmation_code = serializers.CharField(
-        max_length=MAX_LENGTH_CODE, required=True
+        max_length=settings.MAX_LENGTH_CODE, required=True
     )
 
 

@@ -40,10 +40,6 @@ class CustomUser(AbstractUser):
         choices=ROLE_CHOICES, default=USER,
         verbose_name='Роль'
     )
-    confirmation_code = models.CharField(
-        max_length=MAX_LENGTH_CODE, blank=True, null=True,
-        editable=False, verbose_name='Код подтверждения'
-    )
 
     class Meta:
         ordering = ('username', )

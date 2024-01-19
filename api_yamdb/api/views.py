@@ -54,8 +54,6 @@ def signup(request):
         [email],
         fail_silently=False,
     )
-    user.confirmation_code = confirmation_code
-    user.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -67,11 +65,9 @@ def give_token(request):
     user = get_object_or_404(
         User, username=serializer.validated_data['username']
     )
-    if (user.confirmation_code != serializer.validated_data[
-            'confirmation_code'
-    ]):
-        user.confirmation_code = 'INVALID_CODE'
-        user.save()
+    if not default_token_generator.check_token(
+            user, serializer.validated_data['confirmation_code']
+    ):
         return Response(
             {'detail': 'Неверный код доступа'},
             status=status.HTTP_400_BAD_REQUEST

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -14,8 +15,6 @@ ROLE_CHOICES = (
 )
 MAX_LENGTH_USERNAME = 150
 MAX_LENGTH_EMAIL = 254
-MAX_LENGTH_CODE = 5
-RANGE_CODE = (10000, 99999)
 MAX_LENGTH_SLUG = 50
 MAX_LENGTH_NAME = 256
 MAX_LENGTH_NAME_TITLE = 256
@@ -42,7 +41,7 @@ class CustomUser(AbstractUser):
         verbose_name='Роль'
     )
     confirmation_code = models.CharField(
-        max_length=MAX_LENGTH_CODE, blank=True, null=True,
+        max_length=settings.MAX_LENGTH_CODE, blank=True, null=True,
         editable=False, verbose_name='Код подтверждения'
     )
 

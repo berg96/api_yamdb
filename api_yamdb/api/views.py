@@ -25,7 +25,7 @@ from .serializers import (
     SignupSerializer, TitleReadSerializer, TitleWriteSerializer,
     TokenSerializer, UserSerializer, UserSerializerForAdmin
 )
-from reviews.models import RANGE_CODE, Category, Genre, Review, Title
+from reviews.models import Category, Genre, Review, Title
 
 User = get_user_model()
 
@@ -50,7 +50,10 @@ def signup(request):
         else:
             result['email'] = [email, ERROR_IN_USE]
         raise ValidationError(result)
-    confirmation_code = str(random.randint(*RANGE_CODE))
+    confirmation_code = ''.join(
+        random.choice(settings.CODE_CHARACTERS)
+        for _ in range(settings.MAX_LENGTH_CODE)
+    )
     send_mail(
         'Код подтверждения',
         f'Ваш код подтверждения: {confirmation_code}',

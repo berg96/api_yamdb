@@ -22,9 +22,10 @@ def validate_username(username):
             f'Нельзя использовать "{settings.SELF_PROFILE_NAME}" '
             'в качестве username'
         )
-    if not re.fullmatch(PATTERN, username):
+    invalid_chars = re.sub(PATTERN, '', username)
+    if invalid_chars:
         raise ValidationError(
             'Недопустимые символы в username: '
-            f'{"".join(set(re.sub(PATTERN, "", username)))}'
+            f'{"".join(set(invalid_chars))}'
         )
     return username

@@ -130,6 +130,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'yamdb-team5@yandex.ru'
 
 SELF_PROFILE_NAME = 'me'
-INVALID_CODE = 'INVALID_CODE'
 MAX_LENGTH_CODE = 5
 CODE_CHARACTERS = string.digits
+INVALID_CODE = '*' * MAX_LENGTH_CODE

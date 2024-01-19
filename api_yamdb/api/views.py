@@ -8,6 +8,7 @@ from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -48,7 +49,7 @@ def signup(request):
                 result['email'] = [email, ERROR_IN_USE]
         else:
             result['email'] = [email, ERROR_IN_USE]
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        raise ValidationError(result)
     confirmation_code = str(random.randint(*RANGE_CODE))
     send_mail(
         'Код подтверждения',
@@ -71,14 +72,13 @@ def give_token(request):
         User, username=serializer.validated_data['username']
     )
     confirmation_code = serializer.validated_data['confirmation_code']
-    if (user.confirmation_code != confirmation_code
-            or confirmation_code == settings.INVALID_CODE):
+    if (
+        user.confirmation_code != confirmation_code
+        or confirmation_code == settings.INVALID_CODE
+    ):
         user.confirmation_code = settings.INVALID_CODE
         user.save()
-        return Response(
-            {'detail': 'Неверный код доступа'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        raise ValidationError({'confirmation_code': ['Неверный код доступа']})
     refresh = RefreshToken.for_user(user)
     data = {
         'token': str(refresh.access_token)

@@ -24,6 +24,12 @@ tg: [@Denis_Kagirov](https://t.me/Denis_Kagirov)
 
 [GitHub](https://github.com/KagirovDenis)
 
+### Соавтор Львов Евгений
+
+tg: [@Denis_Kagirov](https://t.me/jenique13)
+
+[GitHub](https://github.com/DruNik88)
+
 ## Используемые технологии 
 
 Проек реализован на языке python c использованием следюующих библиотек: 
